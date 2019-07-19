@@ -1,0 +1,102 @@
+                     OSLO - Open Secure LOader
+        
+ 		         Bernhard  Kauer 
+	                _kauer@tudos.org_
+
+
+Introduction
+############
+
+OSLO, the Open Secure Loader, is a boot loader which uses the _skinit_
+instruction for authenticated booting.
+
+With less than 1000 lines of code and a binary which is in the order
+of 4k auditing, bugfixing and in the end trusting OSLO should be
+possible.
+
+
+Prerequisites
+=============
+
+To use OSLO a PC platform supporting _skinit_ is needed. There must be
+a processor with the _skinit_ instruction, a v1.2 TPM [TPM] and a
+chipset which provides memory protection for the secure loader.
+
+The _skinit_ instruction is available with newer AMD64 processors
+[AMD] and used to create a dynamic root of trust for measurement. It
+is a replacement for the static root of trust provided by the BIOS and
+subsequent secure boot loaders which are used on machines not
+supporting skinit.
+
+
+Functionality
+=============
+
+OSLO is started as kernel from a multi-boot compliant [MBI] loader. It
+initialize the TPM, calls skinit, hashes [SHA] every module it gets
+from the parent boot-loader and starts the first module as new kernel
+in the multi-boot way.
+
+
+
+Minimal
+=======
+
+Since OSLO is the root of trust of the secure system it is as minimized
+as possible. Therefore it neither contain code to load images from
+network nor hard disk. This can be done by another untrusted multi-boot
+loader like GRUB or syslinux.
+
+
+Components
+##########
+
+:asm.S:
+  Initialize the processor on startup and after skinit by e.g. loading the
+  stack pointer and segments.
+
+:sha.c:
+  A size optimized Sha1 [SHA] implementation which can hash up to 512 MB.
+  Needs around 512 byte but is nearly 4 times slower than a speed
+  optimized version. Since boot loading is not performance critical
+  and OSLO should not hash large amount of data the speed/size
+  tradeoff is acceptable here.
+
+:tis.c:
+  A simple TIS [TIS] driver using the memory mapped interface of
+  version 1.2 TPMs. Tested with TPMs from Infineon and STM.
+
+:tpm.c:
+  The needed TPM functions, like TPM_Extend.
+
+:osl.c:
+  The main program including ELF encoding, hashing the modules and
+  startup of the first one.  
+
+:util.c asm.h:
+  Helper functions for string output and low level hardware access
+  like _rdmsr_.
+
+
+Todo
+####
+
+* set DEV protection for the kernel or whole memory
+* remove debugging code
+
+
+References
+##########
+
+:AMD:  AMD64 Architecture Programmer's Manual Vol. 2 - www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24593.pdf 
+:MBI:  multiboot specification  - http://www.gnu.org/software/grub/manual/multiboot/multiboot.txt
+:SHA:  US Secure Hash Algorithm 1 (SHA1) - www.ietf.org/rfc/rfc3174.txt
+:TIS:  TPM Interface Specification - https://www.trustedcomputinggroup.org/groups/pc_client/TCG_PCClientTPMSpecification_1-20_1-00_FINAL.pdf
+:TPM:  TCG TPM Specification v1.2 rev 5 Part 3 Commands - https://www.trustedcomputinggroup.org/groups/tpm/mainP3Commands_rev85.zip 
+
+
+Acknowledgements
+################
+
+OSLO was funded by OpenTC. Special thanks go to AMD Dresden for the
+constant support and Infineon Munich for the help with TPMs.
