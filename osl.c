@@ -67,7 +67,7 @@ start_module(struct mbi *mbi)
 
   // check elf header
   struct eh *elf = (struct eh *) m->mod_start;
-  ERROR(-21, memcmp(elf->e_ident, "\x7f""ELF\x01\x01", 6), "ELF header incorrect");
+  ERROR(-21, *((unsigned *) elf->e_ident) != 0x464c457f || *((short *) elf->e_ident+2) != 0x0101, "ELF header incorrect");
   ERROR(-22, elf->e_type!=2 || elf->e_machine!=3 || elf->e_version!=1, "ELF type incorrect");
   ERROR(-23, sizeof(struct ph) > elf->e_phentsize, "e_phentsize to small");
 

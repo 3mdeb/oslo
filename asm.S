@@ -13,10 +13,13 @@
  */
 
 
-	.text
-	.globl  _start, _exit, reboot, jmp_multiboot, do_skinit,  _skinit, _stack_end, _stack
-
-_start:
+.macro	FUNCTION name
+	.section .text.\name
+	.globl \name
+	\name:	
+.endm
+	
+FUNCTION _start
 	leal    _stack,%esp
 	xchg    %eax,%edx
 	xchg    %ebx,%eax
@@ -24,27 +27,50 @@ _start:
 	pushl   $_exit
 	jmp     _main
 
-_mbheader:
+FUNCTION _mbheader
         .align  4, 0x90
         .long   0x1BADB002              /* magic */
         .long   0x00000000              /* feature flags */
         .long   0 - 0x1BADB002
 
-reboot:
+FUNCTION reboot
 	/* triple fault */
 	.byte 0xff, 0xff
 
-jmp_multiboot:
+	
+FUNCTION memcpy
+	/* a size optimized memcpy function */
+	pusha
+	xchg %eax, %edi
+	xchg %edx, %esi
+	rep movsb
+	popa
+	ret
+	
+	
+FUNCTION memset
+	/* a size optimized memset function */
+	pusha
+	xchg %eax, %edx
+	mov  %edx, %edi
+	rep  stosb
+	popa
+	ret	
+
+		
+FUNCTION jmp_multiboot
 	xchg %eax, %ebx
 	mov $0x2badb002, %eax
 	jmp *%edx
+
 	  	  
-do_skinit:
+FUNCTION do_skinit
 	mov    $__LOADER_START__, %eax
 	skinit
 	ret
 
-_skinit:
+	
+FUNCTION _skinit
         /* switch back to our stack */
 	leal    _stack, %esp
 
@@ -78,6 +104,7 @@ _skinit:
 
 
 	/* the gdt to load after skinit */
+	.section .data
 	.align(8)
 gdt:
 pgdt_desc:
@@ -97,6 +124,7 @@ _gdt_ds:
 
 
 	/* our stack */
+	.globl  _stack
 	.bss
 _stack_end:
         .space  512

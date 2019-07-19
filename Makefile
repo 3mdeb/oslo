@@ -11,8 +11,8 @@ CC=gcc
 VERBOSE = @
 
 
-osl: osl.ld $(OBJS)
-	$(LD) -N -o $@ -T $^
+oslo: osl.ld $(OBJS)
+	$(LD) -gc-sections -N -o $@ -T $^
 
 util.o:  include/asm.h include/util.h 
 sha.o:   include/asm.h include/util.h include/sha.h
@@ -25,7 +25,7 @@ osl.o:   include/asm.h include/util.h include/sha.h \
 
 .PHONY: clean
 clean:
-	$(VERBOSE) rm -f osl $(OBJS)
+	$(VERBOSE) rm -f oslo $(OBJS)
 
 %.o: %.c
 	$(VERBOSE) $(CC) $(CCFLAGS) -c $<

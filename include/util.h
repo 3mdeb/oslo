@@ -31,7 +31,6 @@
  */
 #define memcpy(x,y,z) __builtin_memcpy(x,y,z)
 #define memset(x,y,z) __builtin_memset(x,y,z)
-#define memcmp(x,y,z)   __builtin_memcmp(x,y,z)
 
 #ifndef NDEBUG
 
