@@ -16,6 +16,7 @@
 #include "util.h"
 #include "munich.h"
 #include "boot_linux.h"
+#include "mp.h"
 
 char *message_label = "MUNICH: ";
 
@@ -89,6 +90,18 @@ _main(struct mbi *mbi, unsigned flags)
 {
   out_info(VERSION " starts Linux");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
+
+
+  if (0 <= check_cpuid())
+    {
+      /**
+       * Start the stopped APs and execute some fixup code.
+       * Note: we reuse the REALMODE_IMAGE region here.
+       */
+      memcpy((char *) REALMODE_IMAGE, &smp_init_start, &smp_init_end - &smp_init_start);
+      ERROR(26, start_processors(REALMODE_IMAGE), "sending an STARTUP IPI to other processors failed");
+    }
+
   ERROR(11, start_linux(mbi), "start linux failed");
   return 12;
 }

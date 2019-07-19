@@ -97,8 +97,13 @@ extern char *message_label;
 void out_description(char *prefix, unsigned int value);
 void out_info(char *msg);
 
+
+/**
+ * Helper functions.
+ */
 void wait(int ms);
 void _exit(unsigned status) __attribute__((noreturn));
+int check_cpuid();
 
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * \brief   Version definition
- * \date    2006-03-28
+ * \date    2006-06-28
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
@@ -15,7 +15,7 @@
 #ifndef _VERSION_H_
 #define _VERSION_H_
 
-#define VERSION "v.0.3.5"
+#define VERSION "v.0.4.0"
 
 #endif
 

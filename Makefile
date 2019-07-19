@@ -9,7 +9,7 @@ CCFLAGS += -g
 endif
 
 CCFLAGS   += -std=gnu99 -mregparm=3 -Iinclude/ -W -Wall -ffunction-sections -fstrict-aliasing -fomit-frame-pointer -minline-all-stringops -Winline
-OBJ = asm.o util.o tis.o tpm.o sha.o elf.o
+OBJ = asm.o util.o tis.o tpm.o sha.o elf.o mp.o
 
 
 CC=gcc
@@ -34,6 +34,7 @@ util.o:  include/asm.h include/util.h
 sha.o:   include/asm.h include/util.h include/sha.h
 tis.o:   include/asm.h include/util.h include/tis.h
 tpm.o:   include/asm.h include/util.h include/tis.h include/tpm.h
+mp.o:    include/asm.h include/util.h include/mp.h
 osl.o:   include/asm.h include/util.h include/sha.h \
 	 include/elf.h include/tis.h  include/tpm.h \
 	 include/mbi.h include/version.h include/osl.h

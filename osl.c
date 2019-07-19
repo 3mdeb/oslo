@@ -18,6 +18,7 @@
 #include "elf.h"
 #include "tpm.h"
 #include "osl.h"
+#include "mp.h"
 #include "version.h"
 
 char *version_string = "OSLO " VERSION "\n";
@@ -50,23 +51,6 @@ mbi_calc_hash(struct mbi *mbi, struct Context *ctx)
 
 
 /**
- * Checks whether we have SVM support and a local APIC.
- *
- * @return: the SVM revision of the processor or a negative value, if
- * not supported.
- */
-int
-check_cpuid()
-{
-  int res;
-  CHECK3(-31,0x8000000A > cpuid_eax(0x80000000), "no ext cpuid");
-  CHECK3(-32,!(0x4   & cpuid_ecx(0x80000001)), "no SVM support");
-  CHECK3(-33,!(0x200 & cpuid_edx(0x80000001)), "no APIC support");
-  res = cpuid_eax(0x8000000A) & 0xff;
-  return res;
-}
-
-/**
  * Enables SVM support.
  *
  */
@@ -83,46 +67,6 @@ enable_svm()
   value = rdmsr(MSR_EFER);
   wrmsr(MSR_EFER, value | EFER_SVME);
   CHECK3(-40, !(rdmsr(MSR_EFER) & EFER_SVME), "could not enable SVM");
-  return 0;
-}
-
-
-
-/**
- * Before a skinit can take place the ApplicationProcessors in an MP
- * system must be in the init state.
- */
-int
-stop_processors()
-{
-  enum
-    {
-      MSR_APIC_BASE    = 0x1B,
-      APIC_BASE_ENABLE = 0x800,
-      APIC_BASE_BSP    = 0x100,
-
-      APIC_ICR_LOW_OFFSET = 0x300,
-
-      APIC_ICR_DST_ALL_EX  = 0x3 << 18,
-      APIC_ICR_LEVEL_EDGE  = 0x0 << 15,
-      APIC_ICR_ASSERT      = 0x1 << 14,
-      APIC_ICR_PENDING     = 0x1 << 12,
-      APIC_ICR_INIT        = 0x5 << 8,
-    };
-
-  unsigned long long value;
-  value = rdmsr(MSR_APIC_BASE);
-  CHECK3(-51, !(value & (APIC_BASE_ENABLE | APIC_BASE_BSP)), "not BSP or APIC disabled");
-  CHECK3(-52, (value >> 32) & 0xf, "APIC out of range");
-
-  unsigned long *apic_icr_low = (unsigned long *)(((unsigned long)value & 0xfffff000) + APIC_ICR_LOW_OFFSET);
-  
-  CHECK3(-53, *apic_icr_low & APIC_ICR_PENDING, "Interrupt pending");
-  *apic_icr_low = APIC_ICR_DST_ALL_EX | APIC_ICR_LEVEL_EDGE | APIC_ICR_ASSERT | APIC_ICR_INIT;
-
-  while (*apic_icr_low & APIC_ICR_PENDING)
-    wait(1);
-
   return 0;
 }
 
@@ -145,7 +89,6 @@ prepare_tpm(unsigned char *buffer)
   CHECK3(-62, tis_deactivate_all(), "tis_deactivate failed");
   return tpm;
 }
-
 
 
 /**
@@ -179,8 +122,13 @@ _main(struct mbi *mbi, unsigned flags)
   ERROR(12, enable_svm(), "could not enable SVM");
   out_description("SVM revision:", revision);
 
+  /**
+   * All APs have to be in the INIT state before skinit can be
+   * executed.
+   */
   ERROR(13, stop_processors(), "sending an INIT IPI to other processors failed");
 
+  wait(1000);
   out_info("call skinit");
   do_skinit();
 }
@@ -221,7 +169,6 @@ oslo(struct mbi *mbi)
 #endif
       ERROR(25, tis_deactivate_all(), "tis_deactivate failed");
   }
-
-  ERROR(26, start_module(mbi), "start module failed");
-  return 27;
+  ERROR(27, start_module(mbi), "start module failed");
+  return 28;
 }

@@ -17,5 +17,8 @@
 #define _BOOT_LINUX_H_
 
 void jmp_kernel(unsigned cs, unsigned stack) __attribute__((noreturn));
+extern char smp_init_start;
+extern char smp_init_end;
+
 
 #endif

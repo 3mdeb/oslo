@@ -65,6 +65,25 @@ _exit(unsigned status)
 
 
 
+
+/**
+ * Checks whether we have SVM support and a local APIC.
+ *
+ * @return: the SVM revision of the processor or a negative value, if
+ * not supported.
+ */
+int
+check_cpuid()
+{
+  int res;
+  CHECK3(-31,0x8000000A > cpuid_eax(0x80000000), "no ext cpuid");
+  CHECK3(-32,!(0x4   & cpuid_ecx(0x80000001)), "no SVM support");
+  CHECK3(-33,!(0x200 & cpuid_edx(0x80000001)), "no APIC support");
+  res = cpuid_eax(0x8000000A) & 0xff;
+  return res;
+}
+
+
 /**
  * Output a single char.
  * Note: We allow only to put a char on the last line.

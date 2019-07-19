@@ -76,15 +76,15 @@ FUNCTION _skinit
 
 	/* enable svm */
 	mov     $0xc0000080, %ecx
-	mov	$0x1000,     %eax
-	xor	%edx, %edx
+        rdmsr
+        or	$0x10, %ah
 	wrmsr
 
 	/* clear VM_CR to enable debugging */
  	mov     $0xc0010114, %ecx
-  	xor	%eax,        %eax
-  	xor	%edx,        %edx
- 	wrmsr
+        rdmsr
+        and     $0xf8, %al
+	wrmsr
 
         /* init gdt and segment register */
 	lgdt    %ss:pgdt_desc
@@ -100,8 +100,10 @@ FUNCTION _skinit
 
 	/* allow interrupts and call main */
 	stgi
+
 	jmp     oslo
 
+	
 /* the gdt to load after skinit */
 	.section .text.gdt
 	.align(8)
