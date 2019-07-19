@@ -81,16 +81,13 @@ dump_pcrs(unsigned char *buffer)
 {
   unsigned int pcrs;
   if (TPM_GetCapability_Pcrs(buffer, &pcrs))
-    out_string("\nTPM_GetCapability_Pcrs() failed");
+    out_info("TPM_GetCapability_Pcrs() failed");
   else
     out_description("PCRs:", pcrs);
 
   unsigned char hash[20];  
   for (unsigned pcr=0; pcr < pcrs; pcr++)
     { 
-      
-      out_char(pcr% 4==0 ? '\n' : ' ');
-      
       int res;
       if ((res = TPM_PcrRead(buffer, pcr, hash)))
 	{
@@ -105,8 +102,9 @@ dump_pcrs(unsigned char *buffer)
 	  for (unsigned i=0; i<4; i++)
 	    out_hex(hash[i], 2);
 	}
+      out_char(pcr% 4==3 ? '\n' : ' ');
+      
     }
-  out_char('\n');
 }
 
 #endif

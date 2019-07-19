@@ -31,6 +31,7 @@
  */
 #define memcpy(x,y,z) __builtin_memcpy(x,y,z)
 #define memset(x,y,z) __builtin_memset(x,y,z)
+#define strlen(x)     __builtin_strlen(x)
 
 #ifndef NDEBUG
 
@@ -81,11 +82,20 @@
 
 
 
+/**
+ * lowlevel output functions
+ */
 int  out_char(unsigned value);
 void out_unsigned(unsigned int value, int len, unsigned base, char flag);
 void out_string(char *value);
 void out_hex(unsigned int value, unsigned int len);
+
+/**
+ * every message with out_description is prefixed with message_label
+ */
+extern char *message_label;
 void out_description(char *prefix, unsigned int value);
+void out_info(char *msg);
 
 void wait(int ms);
 void _exit(unsigned status) __attribute__((noreturn));

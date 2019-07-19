@@ -15,6 +15,8 @@
 #ifndef  _ELF_H
 #define  _ELF_H
 
+#include "mbi.h"
+
 
 struct eh
 {
@@ -44,6 +46,9 @@ struct ph {
   unsigned int p_flags;
   unsigned int p_align;
 };
+
+
+int start_module(struct mbi *mbi);
 
 
 #endif

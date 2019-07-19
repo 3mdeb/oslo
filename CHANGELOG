@@ -1,3 +1,11 @@
+OSLO (0.3.4)
+
+  * add BEIRUT to calc hashes of command lines
+  * output a message label ("OSLO:") to distuingish different apps
+  * move start_module into elf.c to allow sharing with BEIRUT
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 07 May 2006
+
 OSLO (0.3.3)
 
   * do not give the locality with every command

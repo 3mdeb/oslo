@@ -46,7 +46,6 @@ wait(int ms)
     }
 }
 
-
 /**
  * Print the exit status and reboot the machine.
  */
@@ -127,14 +126,26 @@ out_hex(unsigned value, unsigned len)
 }
 
 /**
- * Output a string followed by a single hex value.
+ * Output a string followed by a single hex value, prefixed with a
+ * message label.
  */
 void
 out_description(char *prefix, unsigned int value)
 {
+  out_string(message_label);
   out_string(prefix);
   out_char(' ');
   out_hex(value, 0);
   out_char('\n');
 }
 
+/**
+ * Output a string, prefixed with a message label.
+ */
+void
+out_info(char *msg)
+{
+  out_string(message_label);
+  out_string(msg);
+  out_char('\n');
+}

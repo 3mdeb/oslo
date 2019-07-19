@@ -91,6 +91,13 @@ FAQ
   binary with two modules was indistinguishable. The hole between the
   two halves could be used by an attacker to hide untrusted code.
 
+: Why do you implemented Beirut? :
+  There are applications which can be fooled by giving them a faked
+  commandline. Since someone decided not to fix the applications
+  and handle untrusted command lines like untrusted config files
+  (e.g. simple hash them itself), we have to hash the commandline
+  before we pass it to them. Or in other words: Beirut is just a nasty
+  hack for compatibility reasons.
 
 
 References
