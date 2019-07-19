@@ -18,13 +18,26 @@
 
 
 /**
+ * TIS base address.
+ */
+static int tis_base;
+
+/**
+ * Address of the TIS locality.
+ */
+static int tis_locality;
+
+
+/**
  * Init the TIS driver.
  * Returns a TIS_INIT_* value.
  */
 enum tis_init
-tis_init()
+tis_init(int base)
 {
-  struct tis_id *id = (struct tis_id *)(TIS_LOCALITY_0 + TPM_DID_VID_0);
+
+  tis_base = base;
+  struct tis_id *id = (struct tis_id *)(tis_base + TPM_DID_VID_0);
 
   switch (id->did_vid)
     {
@@ -42,7 +55,6 @@ tis_init()
       out_description("Unknown TPM found! ID:",id->did_vid);
       return TIS_INIT_NO_TPM;
     }
-      
 }
 
 
@@ -50,12 +62,12 @@ tis_init()
  * Deactivate all localities.
  */
 int
-tis_deactivate()
+tis_deactivate_all(void)
 {
   int res = 0;
   for (unsigned i=0; i<4; i++)
     {
-      volatile struct tis_mmap *mmap = (struct tis_mmap *)(TIS_BASE+(i<<12));
+      volatile struct tis_mmap *mmap = (struct tis_mmap *)(tis_base+(i<<12));
       mmap->access = TIS_ACCESS_ACTIVE;
       res |= mmap->access & TIS_ACCESS_ACTIVE;
     }
@@ -72,10 +84,12 @@ int
 tis_access(int locality, int force)
 {
   assert(locality>=TIS_LOCALITY_0 && locality <= TIS_LOCALITY_4);
-  volatile struct tis_mmap *mmap = (struct tis_mmap *) locality;
 
-  CHECK3(1, !(mmap->access & TIS_ACCESS_VALID), "access register not valid");
-  CHECK3(2, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
+  tis_locality = tis_base + locality;
+  volatile struct tis_mmap *mmap = (struct tis_mmap *) tis_locality;
+
+  CHECK3(0, !(mmap->access & TIS_ACCESS_VALID), "access register not valid");
+  CHECK3(1, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
 
   mmap->access = force ? TIS_ACCESS_TO_SEIZE : TIS_ACCESS_REQUEST;
 
@@ -102,9 +116,9 @@ wait_state(volatile struct tis_mmap *mmap, unsigned state)
  */
 static
 int
-tis_write(int locality, unsigned char *buffer, unsigned int size)
+tis_write(const unsigned char *buffer, unsigned int size)
 {
-  volatile struct tis_mmap *mmap = (struct tis_mmap *) locality;
+  volatile struct tis_mmap *mmap = (struct tis_mmap *) tis_locality;
   unsigned res;
 
   if (!(mmap->sts_base & TIS_STS_CMD_READY))
@@ -135,9 +149,9 @@ tis_write(int locality, unsigned char *buffer, unsigned int size)
  */
 static
 int
-tis_read(int locality, unsigned char *buffer, unsigned int size)
+tis_read(unsigned char *buffer, unsigned int size)
 {
-  volatile struct tis_mmap *mmap = (struct tis_mmap *) locality;
+  volatile struct tis_mmap *mmap = (struct tis_mmap *) tis_locality;
   unsigned res = 0;
 
   wait_state(mmap, TIS_STS_VALID | TIS_STS_DATA_AVAIL);
@@ -159,15 +173,14 @@ tis_read(int locality, unsigned char *buffer, unsigned int size)
  * This is our high level TIS function used by all TPM commands.
  */
 int
-tis_transmit(int locality, unsigned char *buffer, unsigned write_count, unsigned read_count)
+tis_transmit(unsigned char *buffer, unsigned write_count, unsigned read_count)
 {
-  assert(locality>=TIS_LOCALITY_0 && locality <= TIS_LOCALITY_4);
   unsigned int res;
 
-  res = tis_write(locality, buffer, write_count);
+  res = tis_write(buffer, write_count);
   CHECK4(-1, res<=0, "  TIS write error:",res);
   
-  res = tis_read(locality, buffer, read_count);
+  res = tis_read(buffer, read_count);
   CHECK4(-2, res<=0, "  TIS read error:",res);
 
   return res;

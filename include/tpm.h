@@ -45,8 +45,7 @@
     assert(TCG_BUFFER_SIZE>=size);					\
     for (unsigned i=0; i<sizeof(send_buffer)/sizeof(*send_buffer); i++)	\
       *((unsigned long *)(buffer+6)+i) = ntohl(send_buffer[i]);		\
-    ret = tis_transmit(locality, buffer, size,				\
-		       TCG_BUFFER_SIZE);				\
+    ret = tis_transmit(buffer, size, TCG_BUFFER_SIZE);			\
     if (ret < 0)							\
       return ret;							\
     POSTCOND;								\
@@ -102,9 +101,9 @@ enum tpm_subcaps_size {
 
 ///////////////////////////////////////////////////////////////////////////
 
-int TPM_Startup_Clear(int locality, unsigned char buffer[TCG_BUFFER_SIZE]);
-int TPM_Extend(int locality, unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, unsigned char *hash);
-int TPM_GetCapability_Pcrs(int locality, unsigned char buffer[TCG_BUFFER_SIZE], unsigned int *pcrs);
-int TPM_PcrRead(int locality, unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, unsigned char *pcrvalue);
-void dump_pcrs(int locality, unsigned char *buffer);
+int TPM_Startup_Clear(unsigned char buffer[TCG_BUFFER_SIZE]);
+int TPM_Extend(unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, unsigned char *hash);
+int TPM_GetCapability_Pcrs(unsigned char buffer[TCG_BUFFER_SIZE], unsigned int *pcrs);
+int TPM_PcrRead(unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, unsigned char *pcrvalue);
+void dump_pcrs(unsigned char *buffer);
 #endif

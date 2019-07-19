@@ -23,12 +23,12 @@
  * Note: We could use the TPM_TRANSMIT_FUNC macro, but this generates smaller code.
  */
 int
-TPM_Startup_Clear(int locality, unsigned char *buffer)
+TPM_Startup_Clear(unsigned char *buffer)
 {
   ((unsigned int *)buffer)[0] = 0x0000c100;
   ((unsigned int *)buffer)[1] = 0x00000c00;
   ((unsigned int *)buffer)[2] = 0x01009900;
-  int res = tis_transmit(locality, buffer, 12, TCG_BUFFER_SIZE);
+  int res = tis_transmit(buffer, 12, TCG_BUFFER_SIZE);
   return res < 0 ? res : (int) ntohl(*((unsigned int *) (buffer+6)));
 }
 
@@ -38,14 +38,14 @@ TPM_Startup_Clear(int locality, unsigned char *buffer)
  * Note: We could use the TPM_TRANSMIT_FUNC macro, but this generates smaller code.
  */
 int
-TPM_Extend(int locality, unsigned char *buffer, unsigned long pcrindex, unsigned char *hash)
+TPM_Extend(unsigned char *buffer, unsigned long pcrindex, unsigned char *hash)
 {
   ((unsigned int *)buffer)[0] = 0x0000c100;
   ((unsigned int *)buffer)[1] = 0x00002200;
   ((unsigned int *)buffer)[2] = 0x00001400;
   *((unsigned int *) (buffer+10))=ntohl(pcrindex);
   TPM_COPY_TO(hash, 4, TCG_HASH_SIZE);
-  int res = tis_transmit(locality, buffer, 34, TCG_BUFFER_SIZE);
+  int res = tis_transmit(buffer, 34, TCG_BUFFER_SIZE);
   TPM_COPY_FROM(hash, 0, TCG_HASH_SIZE);
   return res < 0 ? res : (int) ntohl(*((unsigned int *) (buffer+6)));
 }
@@ -56,7 +56,7 @@ TPM_Extend(int locality, unsigned char *buffer, unsigned long pcrindex, unsigned
 /*
  * Get the number of suported pcrs.
  */
-TPM_TRANSMIT_FUNC(GetCapability_Pcrs, (int locality, unsigned char *buffer, unsigned int *value),
+TPM_TRANSMIT_FUNC(GetCapability_Pcrs, (unsigned char *buffer, unsigned int *value),
 		  unsigned long send_buffer[] = { TPM_ORD_GetCapability
 		      AND TPM_CAP_PROPERTY
 		      AND TPM_SUBCAP AND TPM_CAP_PROP_PCR };,		
@@ -70,17 +70,17 @@ TPM_TRANSMIT_FUNC(GetCapability_Pcrs, (int locality, unsigned char *buffer, unsi
  * Returns the value of the pcr in pcrvalue.
  */
 TPM_TRANSMIT_FUNC(PcrRead, 
-		  (int locality, unsigned char *buffer, unsigned long index, unsigned char *value),
+		  (unsigned char *buffer, unsigned long index, unsigned char *value),
 		  unsigned long send_buffer[] = {TPM_ORD_PcrRead AND index};
 		  if (value==0) return -1;,
 		  TPM_COPY_FROM(value, 0, TCG_HASH_SIZE);)
 
 
 void
-dump_pcrs(int locality, unsigned char *buffer)
+dump_pcrs(unsigned char *buffer)
 {
   unsigned int pcrs;
-  if (TPM_GetCapability_Pcrs(locality, buffer, &pcrs))
+  if (TPM_GetCapability_Pcrs(buffer, &pcrs))
     out_string("\nTPM_GetCapability_Pcrs() failed");
   else
     out_description("PCRs:", pcrs);
@@ -92,7 +92,7 @@ dump_pcrs(int locality, unsigned char *buffer)
       out_char(pcr% 4==0 ? '\n' : ' ');
       
       int res;
-      if ((res = TPM_PcrRead(locality, buffer, pcr, hash)))
+      if ((res = TPM_PcrRead(buffer, pcr, hash)))
 	{
 	  out_description("\nTPM_PcrRead() failed with",res);
 	  break;

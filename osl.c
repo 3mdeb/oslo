@@ -20,7 +20,7 @@
 #include "osl.h"
 
 
-char *version_string = "OSLO v.0.3.2\n";
+char *version_string = "OSLO v.0.3.3\n";
 
 
 /**
@@ -30,18 +30,21 @@ static
 int
 mbi_calc_hash(struct mbi *mbi, struct Context *ctx)
 {
+  unsigned res;
+
   ERROR(-11, ~mbi->flags & MBI_FLAG_MODS, "module flag missing");
   ERROR(-12, !mbi->mods_count, "no module to hash");
   out_description("Hashing modules count:", mbi->mods_count);
 
-  sha1_init(ctx);
   struct module *m  = (struct module *) (mbi->mods_addr);
   for (unsigned i=0; i < mbi->mods_count; i++, m++)
     {
+      sha1_init(ctx);
       ERROR(-13, m->mod_end < m->mod_start, "mod_end less than start");
       sha1(ctx, (unsigned char*) m->mod_start, m->mod_end - m->mod_start);
+      sha1_finish(ctx);
+      CHECK4(-14, (res = TPM_Extend(ctx->buffer, 19, ctx->hash)), "TPM extend failed", res);
     }
-  sha1_finish(ctx);
   return 0;
 }
 
@@ -172,15 +175,20 @@ _main(struct mbi *mbi, unsigned flags)
   out_string(version_string);
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 
-  if (tis_init()) 
+  // set bootloader name
+  mbi->flags |= MBI_FLAG_BOOT_LOADER_NAME;
+  mbi->boot_loader_name = (unsigned) version_string;
+
+
+  if (tis_init(TIS_BASE)) 
     {
       int res;
 
       ERROR(10, !tis_access(TIS_LOCALITY_0, 1), "could not gain TIS ownership");
-      if ((res=TPM_Startup_Clear(TIS_LOCALITY_0, buffer)) && res!=0x26)
+      if ((res=TPM_Startup_Clear(buffer)) && res!=0x26)
 	out_description("TPM_Startup() failed",res);
 
-      ERROR(11, tis_deactivate(), "tis_deactivate failed");
+      ERROR(11, tis_deactivate_all(), "tis_deactivate failed");
     }
 
   int revision;
@@ -211,28 +219,22 @@ int
 oslo(struct mbi *mbi)
 {
   struct Context ctx;
-  unsigned res;
-  const int locality = TIS_LOCALITY_2;
   
   ERROR(20, !mbi, "no mbi in oslo()");
-  ERROR(21, mbi_calc_hash(mbi, &ctx),  "calc hash failed");
 
-  show_hash("HASH ",ctx.hash);
-
-  if (tis_init())
+  if (tis_init(TIS_BASE))
     {
-      ERROR(22, !tis_access(locality, 1), "could not gain TIS ownership");
-      CHECK4(23, (res = TPM_Extend(locality, ctx.buffer, 19, ctx.hash)), "TPM extend failed", res);
-
+      ERROR(21, !tis_access(TIS_LOCALITY_2, 1), "could not gain TIS ownership");
+      ERROR(22, mbi_calc_hash(mbi, &ctx),  "calc hash failed");
       show_hash("PCR[19]: ",ctx.hash);
 
 #ifndef NDEBUG
-      dump_pcrs(locality, ctx.buffer);
+      dump_pcrs(ctx.buffer);
 
-      CHECK4(24,(res = TPM_PcrRead(locality, ctx.buffer, 17, ctx.hash)), "TPM_PcrRead failed", res);
+      CHECK4(24,(res = TPM_PcrRead(ctx.buffer, 17, ctx.hash)), "TPM_PcrRead failed", res);
       show_hash("PCR[17]: ",ctx.hash);
 #endif
-      ERROR(25, tis_deactivate(), "tis_deactivate failed");
+      ERROR(25, tis_deactivate_all(), "tis_deactivate failed");
     }
 
   ERROR(26, start_module(mbi), "start module failed");

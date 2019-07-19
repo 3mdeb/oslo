@@ -18,10 +18,11 @@
 
 enum mbi_enum
   {
-    MBI_MAGIC        = 0x2badb002,
-    MBI_FLAG_MEM     = 1 << 0,
-    MBI_FLAG_CMDLINE = 1 << 2,
-    MBI_FLAG_MODS    = 1 << 3,
+    MBI_MAGIC                  = 0x2badb002,
+    MBI_FLAG_MEM               = 1 << 0,
+    MBI_FLAG_CMDLINE           = 1 << 2,
+    MBI_FLAG_MODS              = 1 << 3,
+    MBI_FLAG_BOOT_LOADER_NAME  = 1 << 9,
   };
 
 
@@ -34,6 +35,8 @@ struct mbi
   unsigned cmdline;
   unsigned mods_count;
   unsigned mods_addr;
+  unsigned dummy[9];
+  unsigned boot_loader_name;
 };
 
 

@@ -27,11 +27,11 @@ enum tis_mem_offsets
   {
     TIS_BASE =  (int) 0xfed40000,
     TPM_DID_VID_0 = 0xf00,
-    TIS_LOCALITY_0 = TIS_BASE+0x0000,
-    TIS_LOCALITY_1 = TIS_BASE+0x1000,
-    TIS_LOCALITY_2 = TIS_BASE+0x2000,
-    TIS_LOCALITY_3 = TIS_BASE+0x3000,
-    TIS_LOCALITY_4 = TIS_BASE+0x4000
+    TIS_LOCALITY_0 = 0x0000,
+    TIS_LOCALITY_1 = 0x1000,
+    TIS_LOCALITY_2 = 0x2000,
+    TIS_LOCALITY_3 = 0x3000,
+    TIS_LOCALITY_4 = 0x4000
   };
 
 
@@ -84,13 +84,11 @@ enum tis_sts_bits
   };
 
 
-
-void tis_dump();
-enum tis_init tis_init();
-int tis_deactivate();
+void tis_dump(void);
+enum tis_init tis_init(int tis_base);
+int tis_deactivate_all(void);
 int tis_access(int locality, int force);
-int tis_transmit(int locality,
-		 unsigned char *buffer,
+int tis_transmit(unsigned char *buffer,
 		 unsigned write_count,
 		 unsigned read_count);
 

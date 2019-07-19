@@ -16,8 +16,8 @@
 #ifndef _ASM_H_
 #define _ASM_H_
 
-void reboot() __attribute__((noreturn));
-void do_skinit() __attribute__((noreturn));
+void reboot(void) __attribute__((noreturn));
+void do_skinit(void) __attribute__((noreturn));
 void jmp_multiboot(void * mbi, unsigned int entry) __attribute__((noreturn));
 
 
@@ -33,7 +33,7 @@ ntohl(unsigned int v)
 
 static inline
 unsigned long long
-rdtsc()
+rdtsc(void)
 {
   unsigned long long res;
 

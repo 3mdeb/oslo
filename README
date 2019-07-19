@@ -77,11 +77,20 @@ Components
   like _rdmsr_.
 
 
-Todo
-####
+FAQ
+###
 
-* set DEV protection for the kernel or whole memory
-* remove debugging code
+: Why is DEV protection not implemented? :
+  If OSLO would disallow DMA to all RAM many OS will break, since
+  there is currently no kernel which can handle DEV protected
+  memory. The same is true for the global interrupt flag.
+
+: Why do you extend the PCR for every module? :
+  Previously OSLO would calc a hash over all multiboot modules. This
+  was a bug since hashing one module or hashing two halves of the same
+  binary with two modules was indistinguishable. The hole between the
+  two halves could be used by an attacker to hide untrusted code.
+
 
 
 References
