@@ -1,0 +1,29 @@
+OSLO (0.3.2)
+
+  * poll the PIT to wait a number of milliseconds
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Thu, 27 Apr 2006
+
+
+OSLO (0.3.1)
+
+  * implement memcpy and memset to let it compile with gcc-3.4
+  * use -ffunction-sections and -gc-section to remove unused code
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 19 Apr 2006
+
+
+OSLO (0.3)
+
+  * support for multiprocessor platforms
+  * fix "SL length multiple of 4" bug
+  * renamed to OSLO because of naming conflicts
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Fri, 7 Apr 2006
+
+
+OSL (0.2)
+
+  * initial public release
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Thu, 28 Mar 2006

@@ -4,7 +4,7 @@ else
 CCFLAGS += -g
 endif
 
-CCFLAGS += -std=gnu99 -mregparm=3 -Iinclude/ -W -Wall -fstrict-aliasing -fomit-frame-pointer -minline-all-stringops -Winline
+CCFLAGS += -std=gnu99 -mregparm=3 -Iinclude/ -W -Wall -ffunction-sections -fstrict-aliasing -fomit-frame-pointer -minline-all-stringops -Winline
 OBJS    =  asm.o util.o osl.o tis.o tpm.o sha.o
 
 CC=gcc

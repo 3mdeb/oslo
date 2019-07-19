@@ -17,22 +17,33 @@
 #include <stdarg.h>
 #include "util.h"
 
-
-enum
-  {
-    CPU_FREQ = 2048
-  };
-
-
 /**
  * Wait roughly a given number of milliseconds.
+ *
+ * We use the PIT for this.
  */
 void
-wait(unsigned long long ms)
+wait(int ms)
 {
-  unsigned long long end = rdtsc() + ms*1024*CPU_FREQ;
-  while (rdtsc() < end)
-    ;
+  /* the PIT counts with 1.193 Mhz */
+  ms*=1193;
+
+  /* initalize the PIT, let counter0 count from 256 backwards */
+  asm volatile ("outb %%al,$0x43" :: "a"(0x10));
+  asm volatile ("outb %%al,$0x40" :: "a"(0)); 
+
+  
+  unsigned state;
+  unsigned old = 0;
+  while (ms>0)
+    {
+      /* read the current value of counter0 */
+      asm volatile ("outb %%al,$0x43   \n\t" 
+		    "inb  $0x40,%%al   \n\t"
+		    : "=a"(state) : "a"(0));
+      ms -= (unsigned char)(old - state);
+      old = state;
+    }
 }
 
 

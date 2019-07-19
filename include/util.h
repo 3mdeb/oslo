@@ -87,7 +87,7 @@ void out_string(char *value);
 void out_hex(unsigned int value, unsigned int len);
 void out_description(char *prefix, unsigned int value);
 
-void wait(unsigned long long ms);
+void wait(int ms);
 void _exit(unsigned status) __attribute__((noreturn));
 
 

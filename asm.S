@@ -18,7 +18,8 @@
 	.globl \name
 	\name:	
 .endm
-	
+
+		
 FUNCTION _start
 	leal    _stack,%esp
 	xchg    %eax,%edx
@@ -67,7 +68,6 @@ FUNCTION jmp_multiboot
 FUNCTION do_skinit
 	mov    $__LOADER_START__, %eax
 	skinit
-	ret
 
 	
 FUNCTION _skinit
@@ -104,7 +104,7 @@ FUNCTION _skinit
 
 
 	/* the gdt to load after skinit */
-	.section .data
+	.section .text
 	.align(8)
 gdt:
 pgdt_desc:

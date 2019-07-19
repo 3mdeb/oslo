@@ -20,6 +20,9 @@
 #include "osl.h"
 
 
+char *version_string = "OSLO v.0.3.2\n";
+
+
 /**
  *  Hash all multiboot modules.
  */
@@ -39,12 +42,6 @@ mbi_calc_hash(struct mbi *mbi, struct Context *ctx)
       sha1(ctx, (unsigned char*) m->mod_start, m->mod_end - m->mod_start);
     }
   sha1_finish(ctx);
-
-  out_string("HASH: ");
-  for (unsigned i=0; i<20; i++)
-    out_hex(ctx->hash[i], 2);
-  out_char('\n');
-
   return 0;
 }
 
@@ -82,7 +79,6 @@ start_module(struct mbi *mbi)
 
   wait(5000);
   jmp_multiboot(mbi, elf->e_entry);
-  return -24;
 }
 
 
@@ -162,6 +158,7 @@ stop_processors()
   return 0;
 }
 
+
 /**
  * This function runs before skinit and has to enable SVM in the processor
  * and disable all localities.
@@ -172,8 +169,7 @@ _main(struct mbi *mbi, unsigned flags)
 
   unsigned char buffer[TCG_BUFFER_SIZE];
 
-  out_string("OSLO v.0.3\n");
-
+  out_string(version_string);
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 
   if (tis_init()) 
@@ -199,6 +195,14 @@ _main(struct mbi *mbi, unsigned flags)
 }
 
 
+static void
+show_hash(char *s, unsigned char *hash)
+{
+  out_string(s);
+  for (unsigned i=0; i<20; i++)
+    out_hex(hash[i], 2);
+  out_char('\n');
+}
 
 /**
  * This code is executed after skinit.
@@ -213,24 +217,20 @@ oslo(struct mbi *mbi)
   ERROR(20, !mbi, "no mbi in oslo()");
   ERROR(21, mbi_calc_hash(mbi, &ctx),  "calc hash failed");
 
+  show_hash("HASH ",ctx.hash);
+
   if (tis_init())
     {
       ERROR(22, !tis_access(locality, 1), "could not gain TIS ownership");
       CHECK4(23, (res = TPM_Extend(locality, ctx.buffer, 19, ctx.hash)), "TPM extend failed", res);
 
-      out_string("PCR[19]: ");
-      for (unsigned i=0; i<20; i++)
-	out_hex(ctx.hash[i], 2);
-      out_char('\n');
+      show_hash("PCR[19]: ",ctx.hash);
 
 #ifndef NDEBUG
       dump_pcrs(locality, ctx.buffer);
-      CHECK4(24,(res = TPM_PcrRead(locality, ctx.buffer, 17, ctx.hash)), "TPM_PcrRead failed", res);
 
-      out_string("PCR[17]: ");
-      for (unsigned i=0; i<20; i++)
-	out_hex(ctx.hash[i], 2);
-      out_char('\n');
+      CHECK4(24,(res = TPM_PcrRead(locality, ctx.buffer, 17, ctx.hash)), "TPM_PcrRead failed", res);
+      show_hash("PCR[17]: ",ctx.hash);
 #endif
       ERROR(25, tis_deactivate(), "tis_deactivate failed");
     }

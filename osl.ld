@@ -18,6 +18,7 @@ SECTIONS
   .loader :
   {
     KEEP(*(.text._mbheader));
+    KEEP(*(.text._start));
     KEEP(*(.text._skinit));
     *(.text .text.*);
     *(.rodata .rodata.*);
@@ -29,7 +30,6 @@ SECTIONS
 
   .bss :
   {
-     *(.data .data.*);
      *(.bss);
   }
 
