@@ -49,7 +49,7 @@ tis_init(int base)
       return TIS_INIT_INFINEON;
     case 0:
     case -1:
-      out_info("No TPM found!\n");
+      out_info("No TPM found!");
       return TIS_INIT_NO_TPM;
     default:
       out_description("Unknown TPM found! ID:",id->did_vid);

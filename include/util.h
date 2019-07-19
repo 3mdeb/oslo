@@ -57,19 +57,19 @@
 #endif
 
 /**
- * Returns result and prints the msg, if value is false.
+ * Returns result and prints the msg, if value is true.
  */
 #define CHECK3(result, value, msg)			\
   {							\
     if (value)						\
       {							\
-	out_string(msg);				\
+	out_info(msg);					\
 	return result;					\
       }							\
   }
 
 /**
- * Returns result and prints the msg and hex, if value is false.
+ * Returns result and prints the msg and hex, if value is true.
  */
 #define CHECK4(result, value, msg, hex)			\
   {							\

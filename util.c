@@ -38,8 +38,8 @@ wait(int ms)
   while (ms>0)
     {
       /* read the current value of counter0 */
-      asm volatile ("outb %%al,$0x43   \n\t" 
-		    "inb  $0x40,%%al   \n\t"
+      asm volatile ("outb %%al,$0x43;" 
+		    "inb  $0x40,%%al;"
 		    : "=a"(state) : "a"(0));
       ms -= (unsigned char)(old - state);
       old = state;
@@ -52,7 +52,8 @@ wait(int ms)
 void
 _exit(unsigned status)
 {
-  out_description("\nexit()" ,status);
+  out_char('\n');
+  out_description("exit()", status);
   for (unsigned i=0; i<16;i++)
     {      
       wait(1000);

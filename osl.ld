@@ -1,16 +1,11 @@
-_link_addr = 0x00200000;
-
 SECTIONS
 {
   ENTRY(_start)
 
-  . = _link_addr;
-
-
-  . = ALIGN(0x10000);
-  __LOADER_START__ = .;
   .slheader :
   {
+    . = ALIGN(0x10000);
+    __LOADER_START__ = .;
     SHORT (_skinit - __LOADER_START__);
     SHORT (__LOADER_END__ - __LOADER_START__);
   }

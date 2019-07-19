@@ -18,9 +18,9 @@
 #include "elf.h"
 #include "tpm.h"
 #include "osl.h"
+#include "version.h"
 
-
-char *version_string = "OSLO v.0.3.4\n";
+char *version_string = "OSLO " VERSION "\n";
 char *message_label = "OSLO:   ";
 
 /**
@@ -32,15 +32,15 @@ mbi_calc_hash(struct mbi *mbi, struct Context *ctx)
 {
   unsigned res;
 
-  ERROR(-11, ~mbi->flags & MBI_FLAG_MODS, "module flag missing");
-  ERROR(-12, !mbi->mods_count, "no module to hash");
+  CHECK3(-11, ~mbi->flags & MBI_FLAG_MODS, "module flag missing");
+  CHECK3(-12, !mbi->mods_count, "no module to hash");
   out_description("Hashing modules count:", mbi->mods_count);
 
   struct module *m  = (struct module *) (mbi->mods_addr);
   for (unsigned i=0; i < mbi->mods_count; i++, m++)
     {
       sha1_init(ctx);
-      ERROR(-13, m->mod_end < m->mod_start, "mod_end less than start");
+      CHECK3(-13, m->mod_end < m->mod_start, "mod_end less than start");
       sha1(ctx, (unsigned char*) m->mod_start, m->mod_end - m->mod_start);
       sha1_finish(ctx);
       CHECK4(-14, (res = TPM_Extend(ctx->buffer, 19, ctx->hash)), "TPM extend failed", res);
@@ -59,9 +59,9 @@ int
 check_cpuid()
 {
   int res;
-  ERROR(-31,0x8000000A > cpuid_eax(0x80000000), "no ext cpuid");
-  ERROR(-32,!(0x4   & cpuid_ecx(0x80000001)), "no SVM support");
-  ERROR(-33,!(0x200 & cpuid_edx(0x80000001)), "no APIC support");
+  CHECK3(-31,0x8000000A > cpuid_eax(0x80000000), "no ext cpuid");
+  CHECK3(-32,!(0x4   & cpuid_ecx(0x80000001)), "no SVM support");
+  CHECK3(-33,!(0x200 & cpuid_edx(0x80000001)), "no APIC support");
   res = cpuid_eax(0x8000000A) & 0xff;
   return res;
 }
@@ -82,9 +82,10 @@ enable_svm()
   unsigned long long value;
   value = rdmsr(MSR_EFER);
   wrmsr(MSR_EFER, value | EFER_SVME);
-  ERROR(-40, !(rdmsr(MSR_EFER) & EFER_SVME), "could not enable SVM");
+  CHECK3(-40, !(rdmsr(MSR_EFER) & EFER_SVME), "could not enable SVM");
   return 0;
 }
+
 
 
 /**
@@ -111,12 +112,12 @@ stop_processors()
 
   unsigned long long value;
   value = rdmsr(MSR_APIC_BASE);
-  ERROR(-51, !(value & (APIC_BASE_ENABLE | APIC_BASE_BSP)), "not BSP or APIC disabled");
-  ERROR(-52, (value >> 32) & 0xf, "APIC out of range");
+  CHECK3(-51, !(value & (APIC_BASE_ENABLE | APIC_BASE_BSP)), "not BSP or APIC disabled");
+  CHECK3(-52, (value >> 32) & 0xf, "APIC out of range");
 
   unsigned long *apic_icr_low = (unsigned long *)(((unsigned long)value & 0xfffff000) + APIC_ICR_LOW_OFFSET);
   
-  ERROR(-53, *apic_icr_low & APIC_ICR_PENDING, "Interrupt pending");
+  CHECK3(-53, *apic_icr_low & APIC_ICR_PENDING, "Interrupt pending");
   *apic_icr_low = APIC_ICR_DST_ALL_EX | APIC_ICR_LEVEL_EDGE | APIC_ICR_ASSERT | APIC_ICR_INIT;
 
   while (*apic_icr_low & APIC_ICR_PENDING)
@@ -124,6 +125,27 @@ stop_processors()
 
   return 0;
 }
+
+
+/**
+ * Prepare the TPM for skinit.
+ * Returns a TIS_INIT_* value.
+ */
+static
+int
+prepare_tpm(unsigned char *buffer)
+{
+  int tpm, res;
+
+  CHECK4(-60, 0 >= (tpm = tis_init(TIS_BASE)), "tis init failed", tpm);
+  CHECK3(-61, !tis_access(TIS_LOCALITY_0, 1), "could not gain TIS ownership");
+  if ((res=TPM_Startup_Clear(buffer)) && res!=0x26)
+    out_description("TPM_Startup() failed",res);
+
+  CHECK3(-62, tis_deactivate_all(), "tis_deactivate failed");
+  return tpm;
+}
+
 
 
 /**
@@ -143,24 +165,21 @@ _main(struct mbi *mbi, unsigned flags)
   mbi->flags |= MBI_FLAG_BOOT_LOADER_NAME;
   mbi->boot_loader_name = (unsigned) version_string;
 
-
-  if (tis_init(TIS_BASE)) 
+  int revision = 0;
+  if (0 >= prepare_tpm(buffer) && (0>(revision = check_cpuid())))
     {
-      int res;
+      if (0 > revision)
+	out_info("No SVN platform");
+      else
+	out_info("Could not prepare the TPM");
 
-      ERROR(10, !tis_access(TIS_LOCALITY_0, 1), "could not gain TIS ownership");
-      if ((res=TPM_Startup_Clear(buffer)) && res!=0x26)
-	out_description("TPM_Startup() failed",res);
-
-      ERROR(11, tis_deactivate_all(), "tis_deactivate failed");
+      ERROR(11, start_module(mbi), "start module failed");
     }
 
-  int revision;
-  ERROR(12, 0>(revision = check_cpuid()), "No SVM platform");
-  ERROR(13, enable_svm(), "could not enable SVM");
+  ERROR(12, enable_svm(), "could not enable SVM");
   out_description("SVM revision:", revision);
 
-  ERROR(14, stop_processors(), "sending an INIT IPI to other processors failed");
+  ERROR(13, stop_processors(), "sending an INIT IPI to other processors failed");
 
   out_info("call skinit");
   do_skinit();
@@ -201,9 +220,8 @@ oslo(struct mbi *mbi)
       show_hash("PCR[17]: ",ctx.hash);
 #endif
       ERROR(25, tis_deactivate_all(), "tis_deactivate failed");
-    }
+  }
 
   ERROR(26, start_module(mbi), "start module failed");
   return 27;
 }
-

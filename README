@@ -77,6 +77,16 @@ Components
   like _rdmsr_.
 
 
+:beirut.c:
+  A helper program that hashes the command line of other multiboot
+  modules.
+
+:munich.c:
+  A helper program to start Linux [LBP] from a multiboot compliant
+  loader. The first module is used as linux kernel. The optional
+  second one is used as initrd.
+
+
 FAQ
 ###
 
@@ -104,6 +114,7 @@ References
 ##########
 
 :AMD:  AMD64 Architecture Programmer's Manual Vol. 2 - http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24593.pdf 
+:LBP:  Linux/I386 Boot Protocol - http://lxr.linux.no/source/Documentation/i386/boot.txt
 :MBI:  multiboot specification  - http://www.gnu.org/software/grub/manual/multiboot/multiboot.txt
 :SHA:  US Secure Hash Algorithm 1 (SHA1) - http://www.ietf.org/rfc/rfc3174.txt
 :TIS:  TPM Interface Specification - https://www.trustedcomputinggroup.org/groups/pc_client/TCG_PCClientTPMSpecification_1-20_1-00_FINAL.pdf

@@ -1,9 +1,6 @@
-_link_addr = 0x00210000;
-
 SECTIONS
 {
   ENTRY(_start)
-  . = _link_addr;
 
   .text :
   {

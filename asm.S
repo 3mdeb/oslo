@@ -1,5 +1,5 @@
 /*
- * \brief   ASM routines like do_skinit or reboot.
+ * \brief   ASM functions like do_skinit or reboot.
  * \date    2006-03-28
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
@@ -102,13 +102,12 @@ FUNCTION _skinit
 	stgi
 	jmp     oslo
 
-
-	/* the gdt to load after skinit */
-	.section .text
+/* the gdt to load after skinit */
+	.section .text.gdt
 	.align(8)
 gdt:
 pgdt_desc:
-	.word 0x17
+	.word end_gdt - gdt - 1
 	.long gdt
 	.word 0
 _gdt_cs:
@@ -121,7 +120,7 @@ _gdt_ds:
 	.word 0x0
 	.word 0x9300
 	.word 0x00cf
-
+end_gdt:
 
 	/* our stack */
 	.globl  _stack

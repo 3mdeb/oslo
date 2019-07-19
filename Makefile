@@ -1,3 +1,7 @@
+#
+# Makefile for the OSLO package.
+#
+
 ifeq ($(DEBUG),)
 CCFLAGS += -Os -DNDEBUG
 else
@@ -13,14 +17,18 @@ VERBOSE = @
 
 
 .PHONY: all
-all: oslo  beirut
+all: oslo beirut munich
 
 
 oslo: osl.ld $(OBJ) osl.o
-	$(LD) -gc-sections -N -o $@ -T $^
+	$(LD) --section-start .slheader=0x00400000 -gc-sections -N -o $@ -T $^
 
 beirut: beirut.ld $(OBJ) beirut.o
-	$(LD) -gc-sections -N -o $@ -T $^
+	$(LD) -Ttext=0x00410000 -gc-sections -N -o $@ -T $^
+
+munich: beirut.ld $(OBJ) boot_linux.o munich.o
+	$(LD) -Ttext=0x0040a000 -gc-sections -N -o $@ -T $^
+
 
 util.o:  include/asm.h include/util.h 
 sha.o:   include/asm.h include/util.h include/sha.h
@@ -28,12 +36,17 @@ tis.o:   include/asm.h include/util.h include/tis.h
 tpm.o:   include/asm.h include/util.h include/tis.h include/tpm.h
 osl.o:   include/asm.h include/util.h include/sha.h \
 	 include/elf.h include/tis.h  include/tpm.h \
-	 include/mbi.h include/osl.h
+	 include/mbi.h include/version.h include/osl.h
+beirut.o: include/asm.h include/util.h include/sha.h \
+          include/elf.h include/tis.h   include/tpm.h \
+          include/mbi.h
+munich.o: include/asm.h include/util.h include/version.h \
+          include/boot_linux.h include/mbi.h include/munich.h
 
 
 .PHONY: clean
 clean:
-	$(VERBOSE) rm -f oslo beirut $(OBJ) osl.o beirut.o
+	$(VERBOSE) rm -f oslo beirut munich $(OBJ) osl.o beirut.o munich.o
 
 %.o: %.c
 	$(VERBOSE) $(CC) $(CCFLAGS) -c $<

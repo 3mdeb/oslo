@@ -16,6 +16,7 @@
 #include "sha.h"
 #include "tpm.h"
 #include "elf.h"
+#include "version.h"
 
 char *message_label = "BEIRUT: ";
 
@@ -55,19 +56,17 @@ _main(struct mbi *mbi, unsigned flags)
 {
   struct Context ctx;
 
-  out_string("BEIRUT v.0.1 hashes command lines\n");
+  out_info(VERSION " hashes command lines");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 
   if (tis_init(TIS_BASE))
     {
       ERROR(11, !tis_access(TIS_LOCALITY_2, 1), "could not gain TIS ownership");
-      mbi_hash_cmd_line(mbi, &ctx);
-      ERROR(12, tis_deactivate_all(), "tis_deactivate failed");
+      if (!mbi_hash_cmd_line(mbi, &ctx))
+	ERROR(12, tis_deactivate_all(), "tis_deactivate failed");
     }
-
+  
   out_info("hashing done");
   ERROR(13, start_module(mbi), "start module failed");
   return 14;
 }
-
-

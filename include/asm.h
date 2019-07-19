@@ -19,7 +19,8 @@
 void reboot(void) __attribute__((noreturn));
 void do_skinit(void) __attribute__((noreturn));
 void jmp_multiboot(void * mbi, unsigned int entry) __attribute__((noreturn));
-
+void jmp_kernel(unsigned cs, unsigned stack) __attribute__((noreturn));
+void jmp_kernel16(unsigned cs, unsigned stack) __attribute__((noreturn));
 
 static inline
 unsigned int

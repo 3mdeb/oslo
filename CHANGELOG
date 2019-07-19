@@ -1,10 +1,16 @@
+OSLO (0.3.5)
+
+  * added MUNICH to start Linux from a multiboot loader
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 05 July 2006
+
 OSLO (0.3.4)
 
-  * add BEIRUT to calc hashes of command lines
+  * added BEIRUT to calc hashes of command lines
   * output a message label ("OSLO:") to distuingish different apps
   * move start_module into elf.c to allow sharing with BEIRUT
 
- -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 07 May 2006
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 07 June 2006
 
 OSLO (0.3.3)
 
