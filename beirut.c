@@ -12,13 +12,13 @@
  * COPYING file for details.
  */
 
+#include "version.h"
 #include "util.h"
 #include "sha.h"
 #include "tpm.h"
 #include "elf.h"
-#include "version.h"
 
-char *message_label = "BEIRUT: ";
+const char *message_label = "BEIRUT: ";
 
 
 /**
@@ -52,10 +52,13 @@ mbi_hash_cmd_line(struct mbi *mbi, struct Context *ctx)
  * next one.
  */
 int
-_main(struct mbi *mbi, unsigned flags)
+__main(struct mbi *mbi, unsigned flags)
 {
   struct Context ctx;
 
+#ifndef NDEBUG
+  serial_init();
+#endif
   out_info(VERSION " hashes command lines");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 

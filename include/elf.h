@@ -49,6 +49,7 @@ struct ph {
 
 
 int start_module(struct mbi *mbi);
+int extract_module(struct mbi *mbi, unsigned *entry_point);
 
 
 #endif

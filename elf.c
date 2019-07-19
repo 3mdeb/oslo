@@ -1,11 +1,9 @@
 #include "elf.h"
 #include "util.h"
 
-/**
- * Start the first module as kernel.
- */
+
 int
-start_module(struct mbi *mbi)
+extract_module(struct mbi *mbi, unsigned *entry_point)
 {
   // skip module after loading
   struct module *m  = (struct module *) mbi->mods_addr;
@@ -30,8 +28,23 @@ start_module(struct mbi *mbi)
       memcpy(ph->p_paddr, (char *)(m->mod_start+ph->p_offset), ph->p_filesz);
       memset(ph->p_paddr+ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
     }
+  *entry_point = elf->e_entry;
+  return 0;
+}
 
-  wait(5000);
+
+/**
+ * Start the first module as kernel.
+ */
+int
+start_module(struct mbi *mbi)
+{
+  int res;
+  unsigned entry_point;
+
+  if ((res = extract_module(mbi, &entry_point)))
+    return res;
+  // wait(2000);
   out_char('\n');
-  jmp_multiboot(mbi, elf->e_entry);
+  jmp_multiboot(mbi, entry_point);
 }

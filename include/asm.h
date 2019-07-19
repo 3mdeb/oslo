@@ -19,8 +19,6 @@
 void reboot(void) __attribute__((noreturn));
 void do_skinit(void) __attribute__((noreturn));
 void jmp_multiboot(void * mbi, unsigned int entry) __attribute__((noreturn));
-void jmp_kernel(unsigned cs, unsigned stack) __attribute__((noreturn));
-void jmp_kernel16(unsigned cs, unsigned stack) __attribute__((noreturn));
 
 static inline
 unsigned int
@@ -93,5 +91,33 @@ wrmsr(unsigned int addr, unsigned long long value)
   // =A does not work in 64 bit mode
   asm volatile ("wrmsr" :: "c"(addr), "A"(value));
 }
+
+
+static inline
+char
+inb(const short port)
+{
+  char res;
+  asm volatile("in %1, %0" : "=a"(res): "Nd"(port));
+  return res;
+}
+
+static inline
+void
+outb(const short port, unsigned char value)
+{
+  asm volatile("outb %0,%1" :: "a"(value),"Nd"(port));
+}
+
+
+static inline
+unsigned
+bsr(unsigned int value)
+{
+  unsigned res;
+  asm volatile("bsr %1,%0" : "=r"(res): "r"(value));
+  return res;
+}
+
 
 #endif

@@ -1,3 +1,11 @@
+OSLO (0.4.1)
+
+  * fix nasty SHA1 bug, triggered on hashing cmdlines
+  * add fixup code for buggy Atmel TPMs
+  * add serial output for debugging
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Fr, 20 October 2006
+
 OSLO (0.4.0)
 
   * execute MP fixup code on multiprocessor platforms

@@ -1,6 +1,6 @@
 SECTIONS
 {
-  ENTRY(_start)
+  ENTRY(__start)
 
   .text :
   {

@@ -20,7 +20,7 @@
 
 
 #ifndef NDEBUG
-#define assert(X) {if (!(X)) { out_string("\nAssertion failed: '" #X  "'\n\n"); _exit(0xbadbbbad);}}
+#define assert(X) {if (!(X)) { out_string("\nAssertion failed: '" #X  "'\n\n"); __exit(0xbadbbbad);}}
 #else
 #define assert(X)
 #endif
@@ -43,7 +43,7 @@
     if (value)							\
       {								\
 	out_string(msg);					\
-	_exit(result);						\
+	__exit(result);						\
       }								\
   }
 
@@ -52,7 +52,7 @@
 #define ERROR(result, value, msg)				\
   {								\
     if (value)							\
-      _exit(result);						\
+      __exit(result);						\
   }
 #endif
 
@@ -87,13 +87,13 @@
  */
 int  out_char(unsigned value);
 void out_unsigned(unsigned int value, int len, unsigned base, char flag);
-void out_string(char *value);
-void out_hex(unsigned int value, unsigned int len);
+void out_string(const char *value);
+void out_hex(unsigned int value, unsigned int bitlen);
 
 /**
  * every message with out_description is prefixed with message_label
  */
-extern char *message_label;
+extern const char *message_label;
 void out_description(char *prefix, unsigned int value);
 void out_info(char *msg);
 
@@ -102,8 +102,9 @@ void out_info(char *msg);
  * Helper functions.
  */
 void wait(int ms);
-void _exit(unsigned status) __attribute__((noreturn));
+void __exit(unsigned status) __attribute__((noreturn));
 int check_cpuid();
+void serial_init();
 
 
 #endif

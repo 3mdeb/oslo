@@ -21,7 +21,7 @@ all: oslo beirut munich
 
 
 oslo: osl.ld $(OBJ) osl.o
-	$(LD) --section-start .slheader=0x00400000 -gc-sections -N -o $@ -T $^
+	$(LD) --section-start .slheader=0x00420000 -gc-sections -N -o $@ -T $^
 
 beirut: beirut.ld $(OBJ) beirut.o
 	$(LD) -Ttext=0x00410000 -gc-sections -N -o $@ -T $^
@@ -32,16 +32,18 @@ munich: beirut.ld $(OBJ) boot_linux.o munich.o
 
 util.o:  include/asm.h include/util.h 
 sha.o:   include/asm.h include/util.h include/sha.h
+elf.o:   include/asm.h include/util.h include/elf.h
+mp.o::   include/asm.h include/util.h include/mp.h
 tis.o:   include/asm.h include/util.h include/tis.h
 tpm.o:   include/asm.h include/util.h include/tis.h include/tpm.h
-mp.o:    include/asm.h include/util.h include/mp.h
-osl.o:   include/asm.h include/util.h include/sha.h \
+osl.o:   include/version.h			    \
+         include/asm.h include/util.h include/sha.h \
 	 include/elf.h include/tis.h  include/tpm.h \
-	 include/mbi.h include/version.h include/osl.h
-beirut.o: include/asm.h include/util.h include/sha.h \
-          include/elf.h include/tis.h   include/tpm.h \
-          include/mbi.h
-munich.o: include/asm.h include/util.h include/version.h \
+	 include/mbi.h include/mp.h   include/osl.h
+beirut.o: include/version.h include/asm.h include/util.h include/sha.h \
+          include/elf.h include/tis.h include/tpm.h include/mbi.h 
+
+munich.o: include/version.h include/asm.h include/util.h      \
           include/boot_linux.h include/mbi.h include/munich.h
 
 

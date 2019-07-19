@@ -13,16 +13,30 @@
  */
 
 
+#include "version.h"
 #include "util.h"
 #include "sha.h"
 #include "elf.h"
 #include "tpm.h"
-#include "osl.h"
 #include "mp.h"
-#include "version.h"
+#include "osl.h"
 
-char *version_string = "OSLO " VERSION "\n";
-char *message_label = "OSLO:   ";
+const char *version_string = "OSLO " VERSION "\n";
+const char *message_label = "OSLO:   ";
+
+/**
+ * Function to output a hash.
+ */
+static void
+show_hash(char *s, unsigned char *hash)
+{
+  out_string(message_label);
+  out_string(s);
+  for (unsigned i=0; i<20; i++)
+    out_hex(hash[i], 15);
+  out_char('\n');
+}
+
 
 /**
  *  Hash all multiboot modules.
@@ -84,7 +98,7 @@ prepare_tpm(unsigned char *buffer)
   CHECK4(-60, 0 >= (tpm = tis_init(TIS_BASE)), "tis init failed", tpm);
   CHECK3(-61, !tis_access(TIS_LOCALITY_0, 1), "could not gain TIS ownership");
   if ((res=TPM_Startup_Clear(buffer)) && res!=0x26)
-    out_description("TPM_Startup() failed",res);
+    out_description("TPM_Startup() failed", res);
 
   CHECK3(-62, tis_deactivate_all(), "tis_deactivate failed");
   return tpm;
@@ -96,13 +110,16 @@ prepare_tpm(unsigned char *buffer)
  * and disable all localities.
  */
 int
-_main(struct mbi *mbi, unsigned flags)
+__main(struct mbi *mbi, unsigned flags)
 {
 
   unsigned char buffer[TCG_BUFFER_SIZE];
 
+#ifndef NDEBUG
+  serial_init();
+#endif
   out_string(version_string);
-  ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
+  ERROR(10, !mbi || flags != MBI_MAGIC, "not loaded via multiboot");
 
   // set bootloader name
   mbi->flags |= MBI_FLAG_BOOT_LOADER_NAME;
@@ -133,16 +150,6 @@ _main(struct mbi *mbi, unsigned flags)
   do_skinit();
 }
 
-
-static void
-show_hash(char *s, unsigned char *hash)
-{
-  out_string(message_label);
-  out_string(s);
-  for (unsigned i=0; i<20; i++)
-    out_hex(hash[i], 2);
-  out_char('\n');
-}
 
 /**
  * This code is executed after skinit.

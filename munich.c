@@ -18,7 +18,7 @@
 #include "boot_linux.h"
 #include "mp.h"
 
-char *message_label = "MUNICH: ";
+const char *message_label = "MUNICH: ";
 
 const unsigned REALMODE_STACK = 0x49000;
 const unsigned REALMODE_IMAGE = 0x40000;
@@ -86,8 +86,11 @@ start_linux(struct mbi *mbi)
  * Start a linux from a multiboot structure.
  */
 int
-_main(struct mbi *mbi, unsigned flags)
+__main(struct mbi *mbi, unsigned flags)
 {
+#ifndef NDEBUG
+  serial_init();
+#endif
   out_info(VERSION " starts Linux");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 

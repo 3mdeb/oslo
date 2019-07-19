@@ -105,11 +105,10 @@ sha1_init(struct Context *ctx)
 void
 sha1(struct Context *ctx, unsigned char* value, unsigned count)
 {
-  for (; count+ctx->index >= 64; count -= 64-ctx->index, value += 64-ctx->index)
+  for (; count+ctx->index >= 64; count -= 64-ctx->index, value += 64-ctx->index, ctx->index = 0)
     {
       memcpy(ctx->buffer + ctx->index, value, 64 - ctx->index);
       process_block(ctx);
-      ctx->index = 0;
       ctx->blocks++;
       ERROR(-20, ctx->blocks>=1<<23, "more than 512 MB to hash");
     }

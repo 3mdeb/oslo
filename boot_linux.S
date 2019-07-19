@@ -1,5 +1,5 @@
 /*
- * \brief   ASM functions to start the linux kernel.
+ * \brief   ASM functions to start a linux kernel.
  * \date    2006-06-28
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
@@ -52,18 +52,17 @@ FUNCTION smp_init_start
 
         // halt CPU
         hlt
+        .code32
 	.global smp_init_end
 smp_init_end:
-        .code32
 	
 /**
- * Setup stack, disable protection mode and jump to the linux bootstrap code via iret.
+ * Setup stack, disable protection mode and jump to the linux bootstrap code via lret.
  */
 FUNCTION jmp_kernel
 	// assemble stack frame
         xor    %ecx, %ecx
         mov    %edx, %esp
-	push   %ecx
 	push   %eax
 	push   %ecx
 		
@@ -84,13 +83,13 @@ FUNCTION jmp_kernel
 	.code16
         movl    %ecx, %cr0
         mov	%dx,   %ss
-	iretl
+	lretl
 	.code32	
 
 
 /* the gdt to load before jmp to real-mode*/
-	.align(8)
 FUNCTION real_gdt
+	.align(8)
 real_pgdt_desc:
 	.word real_end_gdt - real_gdt - 1
 	.long real_gdt

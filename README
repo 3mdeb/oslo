@@ -10,7 +10,7 @@ Introduction
 OSLO, the Open Secure Loader, is a boot loader which uses the _skinit_
 instruction for authenticated booting.
 
-With less than 1000 lines of code and a binary which is in the order
+With around 1000 lines of code and a binary which is in the order
 of 4k auditing, bugfixing and in the end trusting OSLO should be
 possible.
 
@@ -68,13 +68,19 @@ Components
 :tpm.c:
   The needed TPM functions, like TPM_Extend.
 
+:elf.c:
+  The elf encoding.
+
 :osl.c:
-  The main program including ELF encoding, hashing the modules and
+  The main program including hashing the modules and
   startup of the first one.  
 
 :util.c asm.h:
   Helper functions for string output and low level hardware access
   like _rdmsr_.
+
+:mp.c mp.h:
+  Helper functions to start and stop processors on an MP system.
 
 
 :beirut.c:

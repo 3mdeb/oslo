@@ -1,6 +1,6 @@
 SECTIONS
 {
-  ENTRY(_start)
+  ENTRY(__start)
 
   .slheader :
   {
@@ -28,6 +28,10 @@ SECTIONS
      *(.bss);
   }
 
+  .data :
+  {
+     *(.data);
+  }
 
   .debug :
   {

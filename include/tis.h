@@ -19,7 +19,8 @@ enum tis_init
   {
     TIS_INIT_NO_TPM  = 0,
     TIS_INIT_STM = 1,
-    TIS_INIT_INFINEON = 2
+    TIS_INIT_INFINEON = 2,
+    TIS_INIT_ATMEL = 3,
   };
 
 

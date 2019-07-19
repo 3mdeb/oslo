@@ -50,9 +50,7 @@ TPM_Extend(unsigned char *buffer, unsigned long pcrindex, unsigned char *hash)
   return res < 0 ? res : (int) ntohl(*((unsigned int *) (buffer+6)));
 }
 
-
 #ifndef NDEBUG
-
 /*
  * Get the number of suported pcrs.
  */
@@ -74,6 +72,7 @@ TPM_TRANSMIT_FUNC(PcrRead,
 		  unsigned long send_buffer[] = {TPM_ORD_PcrRead AND index};
 		  if (value==0) return -1;,
 		  TPM_COPY_FROM(value, 0, TCG_HASH_SIZE);)
+
 
 
 void
@@ -100,11 +99,10 @@ dump_pcrs(unsigned char *buffer)
 	  out_hex(pcr, 0);
 	  out_string("]: ");
 	  for (unsigned i=0; i<4; i++)
-	    out_hex(hash[i], 2);
+	    out_hex(hash[i], 15);
 	}
       out_char(pcr% 4==3 ? '\n' : ' ');
       
     }
 }
-
 #endif

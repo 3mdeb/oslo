@@ -29,18 +29,15 @@ wait(int ms)
   ms*=1193;
 
   /* initalize the PIT, let counter0 count from 256 backwards */
-  asm volatile ("outb %%al,$0x43" :: "a"(0x10));
-  asm volatile ("outb %%al,$0x40" :: "a"(0)); 
+  outb(0x43,0x14);
+  outb(0x40,0);
 
-  
-  unsigned state;
-  unsigned old = 0;
+  unsigned char state;
+  unsigned char old = 0;
   while (ms>0)
     {
-      /* read the current value of counter0 */
-      asm volatile ("outb %%al,$0x43;" 
-		    "inb  $0x40,%%al;"
-		    : "=a"(state) : "a"(0));
+      outb(0x43,0);
+      state = inb(0x40);
       ms -= (unsigned char)(old - state);
       old = state;
     }
@@ -50,7 +47,7 @@ wait(int ms)
  * Print the exit status and reboot the machine.
  */
 void
-_exit(unsigned status)
+__exit(unsigned status)
 {
   out_char('\n');
   out_description("exit()", status);
@@ -84,6 +81,43 @@ check_cpuid()
 }
 
 
+#ifndef NDEBUG
+static unsigned int serial_initialized;
+#define SERIAL_BASE 0x3f8
+
+void
+serial_init()
+{
+  serial_initialized = 1;
+  // enable DLAB and set baudrate 115200
+  outb(SERIAL_BASE+0x3, 0x80);
+  outb(SERIAL_BASE+0x0, 0x01);
+  outb(SERIAL_BASE+0x1, 0x00);
+  // disable DLAB and set 8N1
+  outb(SERIAL_BASE+0x3, 0x03);
+  // reset IRQ register
+  outb(SERIAL_BASE+0x1, 0x00);
+  // enable fifo
+  outb(SERIAL_BASE+0x2, 0x02);
+  // set RTS,DTR
+  outb(SERIAL_BASE+0x4, 0x03);
+}
+
+
+static
+void
+serial_send(unsigned value)
+{
+  if (!serial_initialized)
+    return;
+
+  while (!(inb(SERIAL_BASE+0x5) & 0x40))
+    ;
+  outb(SERIAL_BASE, value);
+}
+#endif
+
+
 /**
  * Output a single char.
  * Note: We allow only to put a char on the last line.
@@ -91,6 +125,9 @@ check_cpuid()
 int
 out_char(unsigned value)
 {
+#ifndef NDEBUG
+  serial_send(value);
+#endif
 
 #define BASE(ROW) ((unsigned short *) (0xb8000+ROW*160))
   static unsigned int col;
@@ -98,6 +135,9 @@ out_char(unsigned value)
     {
     case '\n':
       col=80;
+#ifndef NDEBUG
+      serial_send('\r');
+#endif
       break;
     default:
       {	
@@ -121,7 +161,7 @@ out_char(unsigned value)
  * Output a string.
  */
 void
-out_string(char *value)
+out_string(const char *value)
 {
   for(; *value; value++)
     out_char(*value);
@@ -132,16 +172,17 @@ out_string(char *value)
  * Output a single hex value.
  */
 void
-out_hex(unsigned value, unsigned len)
+out_hex(unsigned value, unsigned bitlen)
 {
-  unsigned i;
-  for (i=32; i>0; i-=4)
+  int i;
+  for (i=bsr(value | 1<<bitlen) &0xfc; i>=0; i-=4)
     {
-      unsigned a = value>>(i-4);
-      if (a || i==4 || (len*4>=i))
-	{
-	  out_char("0123456789abcdef"[a & 0xf]);
-	}
+      unsigned a = (value >> i) & 0xf;
+      if (a>=10)
+	a += 7;
+      a+=0x30;
+      
+      out_char(a);
     }
 }
 

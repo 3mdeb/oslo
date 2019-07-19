@@ -19,25 +19,30 @@
 	\name:	
 .endm
 
-		
-FUNCTION _start
-	leal    _stack,%esp
-	xchg    %eax,%edx
-	xchg    %ebx,%eax
-	pushl	%eax
-	pushl   $_exit
-	jmp     _main
-
-FUNCTION _mbheader
+FUNCTION __mbheader
         .align  4, 0x90
         .long   0x1BADB002              /* magic */
         .long   0x00000000              /* feature flags */
         .long   0 - 0x1BADB002
+		
+FUNCTION __start
+	leal    _stack,%esp
+	xchg    %eax,%edx
+	xchg    %ebx,%eax
+	pushl	%eax
+	pushl   $__exit
+	jmp     __main
+
 
 FUNCTION reboot
+	lidt   dummy_idt_desc
+	stgi
 	/* triple fault */
 	.byte 0xff, 0xff
 
+	.bss
+dummy_idt_desc:
+	.space 8
 	
 FUNCTION memcpy
 	/* a size optimized memcpy function */
@@ -98,16 +103,14 @@ FUNCTION _skinit
 	sub	$8, %esp
 	movl	4(%esp), %eax
 
-	/* allow interrupts and call main */
-	stgi
-
+	/* jmp to main */
 	jmp     oslo
 
 	
 /* the gdt to load after skinit */
-	.section .text.gdt
+FUNCTION gdt
+	.global pgdt_desc
 	.align(8)
-gdt:
 pgdt_desc:
 	.word end_gdt - gdt - 1
 	.long gdt

@@ -37,22 +37,38 @@ tis_init(int base)
 {
 
   tis_base = base;
-  struct tis_id *id = (struct tis_id *)(tis_base + TPM_DID_VID_0);
+  volatile struct tis_id *id = (struct tis_id *)(tis_base + TPM_DID_VID_0);
+  volatile struct tis_mmap *mmap = (struct tis_mmap *)(tis_base);
 
+  /**
+   * There are these buggy ATMEL TPMs that return -1 as did_vid if the
+   * locality0 is not accessed!
+   */
+  if ((id->did_vid == -1)
+      && ((mmap->intf_capability & ~0x1fa) == 5)
+      && ((mmap->access & 0xe8) == 0x80))
+    {
+      out_info("Fix DID/VID bug...");
+      tis_access(TIS_LOCALITY_0, 0);
+    }
+  
   switch (id->did_vid)
     {
     case 0x2e4d5453:   /* "STM." */
-      out_description("TPM STM rev:", id->rid);
+      out_description("STM rev:", id->rid);
       return TIS_INIT_STM;
     case 0xb15d1:
-      out_description("TPM Infinion rev:", id->rid);
+      out_description("Infinion rev:", id->rid);
       return TIS_INIT_INFINEON;
+    case 0x32021114:
+      out_description("Atmel rev:", id->rid);
+      return TIS_INIT_ATMEL;
     case 0:
     case -1:
-      out_info("No TPM found!");
+      out_info("TPM not found!");
       return TIS_INIT_NO_TPM;
     default:
-      out_description("Unknown TPM found! ID:",id->did_vid);
+      out_description("TPM unknown! ID:",id->did_vid);
       return TIS_INIT_NO_TPM;
     }
 }
