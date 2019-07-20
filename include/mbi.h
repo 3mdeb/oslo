@@ -13,8 +13,7 @@
  */
 
 
-#ifndef _MBI_H
-#define _MBI_H
+#pragma once
 
 enum mbi_enum
   {
@@ -51,5 +50,3 @@ struct module
   unsigned string;
   unsigned reserved;
 };
-
-#endif

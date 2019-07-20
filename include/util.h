@@ -12,9 +12,7 @@
  * COPYING file for details.
  */
 
-
-#ifndef _UTIL_H_
-#define _UTIL_H_
+#pragma once
 
 #include "asm.h"
 
@@ -105,6 +103,3 @@ void wait(int ms);
 void __exit(unsigned status) __attribute__((noreturn));
 int check_cpuid();
 void serial_init();
-
-
-#endif

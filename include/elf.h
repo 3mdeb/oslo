@@ -12,8 +12,7 @@
  * COPYING file for details.
  */
 
-#ifndef  _ELF_H
-#define  _ELF_H
+#pragma once
 
 #include "mbi.h"
 
@@ -50,6 +49,3 @@ struct ph {
 
 int start_module(struct mbi *mbi);
 int extract_module(struct mbi *mbi, unsigned *entry_point);
-
-
-#endif

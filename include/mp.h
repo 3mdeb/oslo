@@ -12,8 +12,7 @@
  * COPYING file for details.
  */
 
-#ifndef _MP_H_
-#define _MP_H_
+#pragma once
 
 
 enum
@@ -58,5 +57,3 @@ start_processors(unsigned address)
   CHECK4(-50, address & 0xfff00fff, "address %d not aligned or larger then 1MB", address);
   return send_ipi(APIC_ICR_STARTUP | address >> 12);
 }
-
-#endif

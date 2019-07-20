@@ -1,3 +1,11 @@
+OSLO (0.4.2)
+
+  * fix initialization of serial devices
+  * add pamplona code to start unmodified OSes
+  * fix multiboot header
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 13 November 2006
+
 OSLO (0.4.1)
 
   * fix nasty SHA1 bug, triggered on hashing cmdlines

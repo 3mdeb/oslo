@@ -12,8 +12,7 @@
  * COPYING file for details.
  */
 
-#ifndef _TIS_H_
-#define _TIS_H_
+#pragma once
 
 enum tis_init
   {
@@ -92,5 +91,3 @@ int tis_access(int locality, int force);
 int tis_transmit(unsigned char *buffer,
 		 unsigned write_count,
 		 unsigned read_count);
-
-#endif

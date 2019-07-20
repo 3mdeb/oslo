@@ -103,6 +103,8 @@ __main(struct mbi *mbi, unsigned flags)
        */
       memcpy((char *) REALMODE_IMAGE, &smp_init_start, &smp_init_end - &smp_init_start);
       ERROR(26, start_processors(REALMODE_IMAGE), "sending an STARTUP IPI to other processors failed");
+
+      asm volatile("stgi");
     }
 
   ERROR(11, start_linux(mbi), "start linux failed");

@@ -35,10 +35,12 @@ static int tis_locality;
 enum tis_init
 tis_init(int base)
 {
+  volatile struct tis_id *id;
+  volatile struct tis_mmap *mmap;
 
   tis_base = base;
-  volatile struct tis_id *id = (struct tis_id *)(tis_base + TPM_DID_VID_0);
-  volatile struct tis_mmap *mmap = (struct tis_mmap *)(tis_base);
+  id = (struct tis_id *)(tis_base + TPM_DID_VID_0);
+  mmap = (struct tis_mmap *)(tis_base);
 
   /**
    * There are these buggy ATMEL TPMs that return -1 as did_vid if the
@@ -81,7 +83,8 @@ int
 tis_deactivate_all(void)
 {
   int res = 0;
-  for (unsigned i=0; i<4; i++)
+  unsigned i;
+  for (i=0; i<4; i++)
     {
       volatile struct tis_mmap *mmap = (struct tis_mmap *)(tis_base+(i<<12));
       mmap->access = TIS_ACCESS_ACTIVE;
@@ -99,10 +102,12 @@ tis_deactivate_all(void)
 int
 tis_access(int locality, int force)
 {
+  volatile struct tis_mmap *mmap;
+
   assert(locality>=TIS_LOCALITY_0 && locality <= TIS_LOCALITY_4);
 
   tis_locality = tis_base + locality;
-  volatile struct tis_mmap *mmap = (struct tis_mmap *) tis_locality;
+  mmap = (struct tis_mmap *) tis_locality;
 
   CHECK3(0, !(mmap->access & TIS_ACCESS_VALID), "access register not valid");
   CHECK3(1, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
@@ -121,7 +126,8 @@ static
 void
 wait_state(volatile struct tis_mmap *mmap, unsigned state)
 {
-  for (unsigned i=0; i<750 && (mmap->sts_base & state)!=state; i++)
+  unsigned i;
+  for (i=0; i<750 && (mmap->sts_base & state)!=state; i++)
     wait(1);
 }
 

@@ -12,9 +12,7 @@
  * COPYING file for details.
  */
 
-
-#ifndef _TPM_H
-#define _TPM_H
+#pragma once
 
 #include "tis.h"
 
@@ -106,4 +104,3 @@ int TPM_Extend(unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, un
 int TPM_GetCapability_Pcrs(unsigned char buffer[TCG_BUFFER_SIZE], unsigned int *pcrs);
 int TPM_PcrRead(unsigned char buffer[TCG_BUFFER_SIZE], unsigned long pcrindex, unsigned char *pcrvalue);
 void dump_pcrs(unsigned char *buffer);
-#endif

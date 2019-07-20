@@ -12,8 +12,7 @@
  * COPYING file for details.
  */
 
-#ifndef _MUNICH_H_
-#define _MUNICH_H_
+#pragma once
 
 #include "mbi.h"
 
@@ -53,7 +52,3 @@ struct linux_kernel_header
 
 
 int _main(struct mbi *local_mbi, unsigned flags);
-
-
-#endif
-

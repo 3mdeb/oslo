@@ -12,9 +12,8 @@
  * COPYING file for details.
  */
 
+#pragma once
 
-#ifndef _ASM_H_
-#define _ASM_H_
 
 void reboot(void) __attribute__((noreturn));
 void do_skinit(void) __attribute__((noreturn));
@@ -94,17 +93,36 @@ wrmsr(unsigned int addr, unsigned long long value)
 
 
 static inline
-char
-inb(const short port)
+unsigned char
+inb(const unsigned short port)
 {
-  char res;
+  unsigned char res;
   asm volatile("in %1, %0" : "=a"(res): "Nd"(port));
   return res;
 }
 
+
+static inline
+unsigned
+inl(const unsigned short port)
+{
+  unsigned res;
+  asm volatile("in %1, %0" : "=a"(res): "Nd"(port));
+  return res;
+}
+
+
 static inline
 void
-outb(const short port, unsigned char value)
+outl(const unsigned short port, unsigned value)
+{
+  asm volatile("outl %0,%1" :: "a"(value),"Nd"(port));
+}
+
+
+static inline
+void
+outb(const unsigned short port, unsigned char value)
 {
   asm volatile("outb %0,%1" :: "a"(value),"Nd"(port));
 }
@@ -118,6 +136,3 @@ bsr(unsigned int value)
   asm volatile("bsr %1,%0" : "=r"(res): "r"(value));
   return res;
 }
-
-
-#endif

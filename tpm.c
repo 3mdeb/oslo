@@ -99,7 +99,7 @@ dump_pcrs(unsigned char *buffer)
 	  out_hex(pcr, 0);
 	  out_string("]: ");
 	  for (unsigned i=0; i<4; i++)
-	    out_hex(hash[i], 15);
+	    out_hex(hash[i], 7);
 	}
       out_char(pcr% 4==3 ? '\n' : ' ');
       

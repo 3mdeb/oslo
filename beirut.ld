@@ -4,8 +4,8 @@ SECTIONS
 
   .text :
   {
-    KEEP(*(.text._mbheader));
-    KEEP(*(.text._start));
+    KEEP(*(.text.__mbheader));
+    KEEP(*(.text.__start));
     *(.text .text.*);
     *(.rodata .rodata.*);
   }

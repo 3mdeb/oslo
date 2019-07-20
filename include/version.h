@@ -12,10 +12,5 @@
  * COPYING file for details.
  */
 
-#ifndef _VERSION_H_
-#define _VERSION_H_
-
-#define VERSION "v.0.4.1"
-
-#endif
-
+#pragma once
+#define VERSION "v.0.4.2"

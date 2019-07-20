@@ -97,8 +97,10 @@ serial_init()
   outb(SERIAL_BASE+0x3, 0x03);
   // reset IRQ register
   outb(SERIAL_BASE+0x1, 0x00);
-  // enable fifo
-  outb(SERIAL_BASE+0x2, 0x02);
+  // enable fifo, flush buffer, enable fifo
+  outb(SERIAL_BASE+0x2, 0x01);
+  outb(SERIAL_BASE+0x2, 0x07);
+  outb(SERIAL_BASE+0x2, 0x01);
   // set RTS,DTR
   outb(SERIAL_BASE+0x4, 0x03);
 }
@@ -131,23 +133,17 @@ out_char(unsigned value)
 
 #define BASE(ROW) ((unsigned short *) (0xb8000+ROW*160))
   static unsigned int col;
-  switch (value)
+  if (value!='\n')
     {
-    case '\n':
-      col=80;
+      unsigned short *p = BASE(24)+col;
+      *p = 0x0f00 | value;
+      col++;
+    }
+  if (col>=80 || value == '\n')
+    {
 #ifndef NDEBUG
       serial_send('\r');
 #endif
-      break;
-    default:
-      {	
-	unsigned short *p = BASE(24)+col;
-	*p = 0x0f00 | value;
-	col++;
-      }
-    }
-  if (col>=80)
-    {
       col=0;
       unsigned short *p=BASE(0);
       memcpy(p, p+80, 24*160);

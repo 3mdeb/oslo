@@ -33,7 +33,7 @@ show_hash(char *s, unsigned char *hash)
   out_string(message_label);
   out_string(s);
   for (unsigned i=0; i<20; i++)
-    out_hex(hash[i], 15);
+    out_hex(hash[i], 7);
   out_char('\n');
 }
 

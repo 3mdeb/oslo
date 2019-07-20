@@ -1,6 +1,6 @@
 /*
- * \brief   header of sha.c
- * \date    2006-03-28
+ * \brief   Header of asm_pamplona.S
+ * \date    2006-10-20
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
@@ -14,14 +14,5 @@
 
 #pragma once
 
-struct Context
-{
-  unsigned int index;
-  unsigned long blocks;
-  unsigned char buffer[64+4];
-  unsigned char hash[20];
-};
-
-void sha1_init(struct Context *ctx);
-void sha1(struct Context *ctx, unsigned char* value, unsigned count);
-void sha1_finish(struct Context *ctx);
+extern char smp_init_start;
+extern char smp_init_end;
