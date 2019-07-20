@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -19,7 +19,6 @@
 /**
  * Read a byte from the pci config space.
  */
-static
 unsigned char
 pci_read_byte(unsigned addr)
 {
@@ -63,12 +62,31 @@ pci_write_word(unsigned addr, unsigned short value)
 /**
  * Write a long to the pci config space.
  */
-static
 void
 pci_write_long(unsigned addr, unsigned value)
 {
   outl(PCI_ADDR_PORT, addr);
   outl(PCI_DATA_PORT, value);
+}
+
+
+/**
+ * Read a word from the pci config space.
+ */
+static inline
+unsigned short
+pci_read_word_aligned(unsigned addr)
+{
+  outl(PCI_ADDR_PORT, addr);
+  return inw(PCI_DATA_PORT);
+}
+
+static inline
+void
+pci_write_word_aligned(unsigned addr, unsigned short value)
+{
+  outl(PCI_ADDR_PORT, addr);
+  outw(PCI_DATA_PORT, value);
 }
 
 
@@ -82,11 +100,17 @@ unsigned
 pci_find_device_per_class(unsigned short class)
 {
   unsigned res = 0;
-  for (unsigned i=0; i<1<<16; i++)
+  for (unsigned i=0; i<1<<13; i++)
     {
-      unsigned addr = 0x80000000 | i<<8;
-      if (class == (pci_read_long(addr+0x8) >> 16))
-	res = addr;
+      unsigned char maxfunc = 0;
+      for (unsigned func=0; func<=maxfunc; func++)
+	{
+	  unsigned addr = 0x80000000 | i<<11 | func<<8;
+	  if (!maxfunc && pci_read_byte(addr+14) & 0x80)
+	    maxfunc=7;
+	  if (class == (pci_read_long(addr+0x8) >> 16))
+	    res = addr;
+	}
     }
   return res;
 }
@@ -100,13 +124,20 @@ static
 unsigned
 pci_find_device(unsigned id)
 {
-  for (unsigned i=0; i<1<<16; i++)
+  unsigned res = 0;
+  for (unsigned i=0; i<1<<13; i++)
     {
-      unsigned addr = 0x80000000 | i<<8;
-      if (id == pci_read_long(addr))
-	return addr;
+      unsigned char maxfunc = 0;
+      for (unsigned func=0; func<=maxfunc; func++)
+	{
+	  unsigned addr = 0x80000000 | i<<11 | func<<8;
+	  if (!maxfunc && pci_read_byte(addr+14) & 0x80)
+	    maxfunc=7;
+	  if (id == (pci_read_long(addr+0x8)))
+	    res = addr;
+	}
     }
-  return 0;
+  return res;
 }
 
 
@@ -120,7 +151,7 @@ static
 unsigned char
 pci_dev_find_cap(unsigned addr, unsigned char id)
 {
-  ERROR(-11, !(pci_read_long(addr+PCI_CONF_HDR_CMD) & 0x100000),"no capability list support");
+  CHECK3(-11, !(pci_read_long(addr+PCI_CONF_HDR_CMD) & 0x100000),"no capability list support");
   unsigned char cap_offset = pci_read_byte(addr+PCI_CONF_HDR_CAP);
   while (cap_offset)
     if (id == pci_read_byte(addr+cap_offset))
@@ -129,8 +160,75 @@ pci_dev_find_cap(unsigned addr, unsigned char id)
       cap_offset = pci_read_byte(addr+cap_offset+PCI_CAP_OFFSET);
   return 0;
 }
-  
 
+
+void
+myprintf(char *fmt, char ch, unsigned high_base, unsigned base, unsigned high_size, unsigned size)
+{
+  out_char(ch);
+  out_hex(high_base, 31);
+  out_char('_');
+  out_hex(base, 31);
+  out_char(' ');
+  out_hex(high_size, 31);
+  out_char('_');
+  out_hex(size, 31);
+  out_char('\n');
+}
+
+/**
+ * Print pci bars.
+ */
+void
+pci_print_bars(unsigned addr, unsigned count)
+{
+  unsigned bars[6];
+  unsigned masks[6];
+
+  //disable device
+  short cmd = pci_read_word_aligned(addr + 0x4);
+  pci_write_word_aligned(addr + 0x4, 0);
+
+  // read bars and masks
+  for (unsigned i=0; i < count; i++)
+    {
+      unsigned a = addr + 0x10 + i*4;
+      bars[i] = pci_read_long(a);
+      pci_write_long(a, ~0);
+      masks[i] = ~pci_read_long(a);
+      pci_write_long(a, bars[i]);
+    }
+  // reenable device
+  pci_write_word_aligned(addr + 0x4, cmd);
+
+
+  for (unsigned i=0; i < count; i++)
+    {
+      unsigned base, high_base = 0;
+      unsigned size, high_size = 0;
+      char ch;
+      if (bars[i] & 0x1)
+	{
+	  base = bars[i] & 0xfffe;
+	  size = (masks[i] & 0xfffe) | 1 | base;
+	  ch = 'i';
+	}
+      else
+	{
+	  ch = 'm';
+	  base = bars[i] & ~0xf;
+	  size = masks[i] | 0xf | base;
+	  if ((bars[i] & 0x6) ==  4 && i<5)
+	    {
+	      high_base = bars[i+1];
+	      high_size = masks[i+1] | high_base;
+	      i++;
+	    }
+	}
+      if (base)
+	myprintf("    %c: %#x%x/%#x%x", ch, high_base, base, high_size, size);
+    }
+}
 
 
 /**
@@ -154,6 +252,9 @@ pci_iterate_devices()
 	      maxfunc=7;
 	    if (!value || value==0xffffffff)
 	      continue;
+#if 0
+	    myprintf("%x:%x.%x %x: %x:%x %x\n", bus, dev, func, class, value & 0xffff, value >> 16, header_type);
+#else
 	    out_hex(bus,7);
 	    out_char(':');
 	    out_hex(dev,4);
@@ -169,6 +270,8 @@ pci_iterate_devices()
 	    out_char(' ');
 	    out_hex(header_type,7);
 	    out_char('\n');
+#endif
+	    //pci_print_bars(addr, header_type & 0x7f ? 2 : 6);
 	  }
       }
   return 0;
@@ -206,9 +309,11 @@ unsigned
 dev_get_addr()
 {
   unsigned addr;
-  ERROR(-21, !(addr = pci_find_device(DEV_PCI_DEVICE_ID)),"device not found");
-  ERROR(-22, !(addr = addr + pci_dev_find_cap(addr, DEV_PCI_CAP_ID)),"cap not found");
-  ERROR(-23, 0xf != (pci_read_long(addr) & 0xf00ff),"invalid DEV_HDR");
+  addr = pci_find_device(DEV_PCI_DEVICE_ID_OLD);
+  if (!addr) addr = pci_find_device(DEV_PCI_DEVICE_ID_K10);
+  CHECK3(-21, !addr, "device not found");
+  CHECK3(-22, !(addr = addr + pci_dev_find_cap(addr, DEV_PCI_CAP_ID)),"cap not found");
+  CHECK3(-23, 0xf != (pci_read_long(addr) & 0xf00ff),"invalid DEV_HDR");
   return addr;
 }
 
@@ -220,7 +325,7 @@ disable_dev_protection()
 {
   unsigned addr;
   out_info("disable DEV and SLDEV protection");
-  ERROR(-30, !(addr = dev_get_addr()),"DEV not found");
+  CHECK3(-30, !(addr = dev_get_addr()),"DEV not found");
   dev_write_reg(addr, DEV_REG_CR, 0, dev_read_reg(addr, DEV_REG_CR, 0) & ~(DEV_CR_SLDEV | DEV_CR_EN | DEV_CR_INVD));
   return 0;
 }
@@ -237,7 +342,6 @@ enable_dev_bitmap(unsigned addr, unsigned base)
     {
       dev_write_reg(addr, DEV_REG_BASE_HI, dom, 0);
       dev_write_reg(addr, DEV_REG_BASE_HI, dom, base | 3);
-      
     }
   dev_write_reg(addr, DEV_REG_CR, 0, dev_read_reg(addr, DEV_REG_CR, 0) | DEV_CR_EN | DEV_CR_INVD);
   return 0;
@@ -255,9 +359,9 @@ enable_dev_protection(unsigned *sldev_buffer, unsigned char *buffer)
 {
   unsigned addr;
   out_info("enable DEV protection");
-  ERROR(-41, (unsigned) buffer & 0xfff, "dev pointer invalid");
-  ERROR(-42, (unsigned) sldev_buffer < 1<<17 || (unsigned) sldev_buffer & 0xfff, "sldev pointer invalid");
-  ERROR(-43, !(addr = dev_get_addr()),"DEV not found");
+  CHECK3(-41, (unsigned) buffer & 0xfff, "dev pointer invalid");
+  CHECK3(-42, (unsigned) sldev_buffer < 1<<17 || (unsigned) sldev_buffer & 0xfff, "sldev pointer invalid");
+  CHECK3(-43, !(addr = dev_get_addr()),"DEV not found");
 
   /**
    * The DEV interface has a nasty race condition between memsetting
@@ -274,5 +378,5 @@ enable_dev_protection(unsigned *sldev_buffer, unsigned char *buffer)
    */
   memset(buffer, 0xff, 1<<17);
   enable_dev_bitmap(addr, base);
-  return 0;  
+  return 0;
 }

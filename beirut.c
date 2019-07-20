@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -37,10 +37,10 @@ mbi_hash_cmd_line(struct mbi *mbi, struct Context *ctx)
 
   sha1_init(ctx);
 
-  struct module *m  = (struct module *) (mbi->mods_addr);  
-  for (unsigned i=0; i < mbi->mods_count; i++, m++)    
+  struct module *m  = (struct module *) (mbi->mods_addr);
+  for (unsigned i=0; i < mbi->mods_count; i++, m++)
     sha1(ctx, (unsigned char*) m->string, strlen((char*) m->string) + 1);
-  
+
   sha1_finish(ctx);
   CHECK4(-13, (res = TPM_Extend(ctx->buffer, 19, ctx->hash)), "TPM extend failed", res);
   return 0;
@@ -67,7 +67,7 @@ __main(struct mbi *mbi, unsigned flags)
       if (!mbi_hash_cmd_line(mbi, &ctx))
 	ERROR(12, tis_deactivate_all(), "tis_deactivate failed");
     }
-  
+
   out_info("hashing done");
   ERROR(13, start_module(mbi), "start module failed");
   return 14;

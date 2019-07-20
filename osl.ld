@@ -2,6 +2,8 @@ SECTIONS
 {
   ENTRY(__start)
 
+  . = 0x100000;
+
   .slheader :
   {
     . = ALIGN(0x10000);
@@ -28,6 +30,7 @@ SECTIONS
      *(.bss);
   }
 
+  . = ALIGN(0x1000);
   .data :
   {
      *(.data);

@@ -1,6 +1,6 @@
                      OSLO - Open Secure LOader
-        
- 		         Bernhard  Kauer 
+
+ 		         Bernhard  Kauer
 	                _kauer@tudos.org_
 
 
@@ -74,7 +74,7 @@ Components
 
 :osl.c:
   The main program including hashing the modules and
-  startup of the first one.  
+  startup of the first one.
 
 :util.c asm.h:
   Helper functions for string output and low level hardware access
@@ -109,7 +109,7 @@ FAQ
   DEV init race has to be implemented.
 
 : Why do you extend the PCR for every module? :
-  Previously OSLO would calc a hash over all multiboot modules. This
+  Previously, OSLO would calc a hash over all multiboot modules. This
   was a bug since hashing one module or hashing two halves of the same
   binary with two modules was indistinguishable. The hole between the
   two halves could be used by an attacker to hide untrusted code.

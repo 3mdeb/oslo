@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -91,7 +91,7 @@ void out_hex(unsigned int value, unsigned int bitlen);
 /**
  * every message with out_description is prefixed with message_label
  */
-extern const char *message_label;
+extern const char const * message_label;
 void out_description(const char *prefix, unsigned int value);
 void out_info(const char *msg);
 

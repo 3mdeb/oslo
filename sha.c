@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -44,7 +44,7 @@ unsigned int get_w(unsigned char * value, unsigned int round)
 /**
  * Process a single block of 512 bits.
  */
-inline static
+static
 void
 process_block(struct Context *ctx)
 {

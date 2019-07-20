@@ -1,3 +1,14 @@
+OSLO (0.4.6)
+
+* relocatable ELF loader - thanks to Julian Stecklina
+* new STM vendor ID and support for K10 boards  - thanks to Josh Schiffman
+* fix boot of newer linux kernels
+* relocate initrds that are unreachable
+
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 14 June 2010
+
+
 OSLO (0.4.5)
 
 * fix tis_access return code check in Beirut to work with Atmel TPMs

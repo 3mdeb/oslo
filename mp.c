@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -27,7 +27,7 @@ send_ipi(unsigned param)
   value = rdmsr(MSR_APIC_BASE);
   CHECK3(-51, !(value & (APIC_BASE_ENABLE | APIC_BASE_BSP)), "not BSP or APIC disabled");
   CHECK3(-52, (value >> 32) & 0xf, "APIC out of range");
-  
+
   unsigned long *apic_icr_low = (unsigned long *)(((unsigned long)value & 0xfffff000) + APIC_ICR_LOW_OFFSET);
 
   CHECK3(-53, *apic_icr_low & APIC_ICR_PENDING, "Interrupt pending");

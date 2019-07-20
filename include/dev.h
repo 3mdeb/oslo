@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -23,7 +23,8 @@ enum pci_constants {
 };
 
 enum dev_constants {
-  DEV_PCI_DEVICE_ID = 0x11031022,
+  DEV_PCI_DEVICE_ID_OLD = 0x11031022,
+  DEV_PCI_DEVICE_ID_K10 = 0x12031022,
   DEV_PCI_CAP_ID = 0x0f,
   DEV_OFFSET_OP = 4,
   DEV_OFFSET_DATA = 8,
@@ -54,4 +55,5 @@ enum dev_cr {
 int disable_dev_protection();
 int pci_iterate_devices();
 unsigned pci_read_long(unsigned addr);
+void pci_write_long(unsigned addr, unsigned value);
 unsigned pci_find_device_per_class(unsigned short class);

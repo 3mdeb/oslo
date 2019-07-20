@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006-2007  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -53,16 +53,18 @@ tis_init(int base)
       out_info("Fix DID/VID bug...");
       tis_access(TIS_LOCALITY_0, 0);
     }
-  
+
   switch (id->did_vid)
     {
     case 0x2e4d5453:   /* "STM." */
+    case 0x4a100000:
       out_description("STM rev:", id->rid);
       return TIS_INIT_STM;
     case 0xb15d1:
       out_description("Infineon rev:", id->rid);
       return TIS_INIT_INFINEON;
     case 0x32021114:
+    case 0x32031114:
       out_description("Atmel rev:", id->rid);
       return TIS_INIT_ATMEL;
     case 0x100214E4:
@@ -132,7 +134,7 @@ tis_access(int locality, int force)
 
   // make the tpm ready -> abort a command
   mmap->sts_base = TIS_STS_CMD_READY;
-  
+
   if (force && !(mmap->access & TIS_ACCESS_ACTIVE))
     {
       // now force it
@@ -225,7 +227,7 @@ tis_transmit(const unsigned char *write_buffer, unsigned write_count, unsigned c
 
   res = tis_write(write_buffer, write_count);
   CHECK4(-1, res<=0, "  TIS write error:",res);
-  
+
   res = tis_read(read_buffer, read_count);
   CHECK4(-2, res<=0, "  TIS read error:",res);
   return res;

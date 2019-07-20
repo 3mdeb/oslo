@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -29,16 +29,18 @@ wait(int ms)
   ms*=1193;
 
   /* initalize the PIT, let counter0 count from 256 backwards */
-  outb(0x43,0x14);
-  outb(0x40,0);
+  outb(0x43, 0x34);
+  outb(0x40, 0);
+  outb(0x40, 0);
 
-  unsigned char state;
-  unsigned char old = 0;
+  unsigned short state;
+  unsigned short old = 0;
   while (ms>0)
     {
-      outb(0x43,0);
+      outb(0x43, 0);
       state = inb(0x40);
-      ms -= (unsigned char)(old - state);
+      state |= inb(0x40) << 8;
+      ms -= (unsigned short)(old - state);
       old = state;
     }
 }
@@ -52,7 +54,7 @@ __exit(unsigned status)
   out_char('\n');
   out_description("exit()", status);
   for (unsigned i=0; i<16;i++)
-    {      
+    {
       wait(1000);
       out_char('.');
     }
@@ -148,10 +150,6 @@ serial_send(unsigned value)
 int
 out_char(unsigned value)
 {
-#ifndef NDEBUG
-  serial_send(value);
-#endif
-
 #define BASE(ROW) ((unsigned short *) (0xb8000+ROW*160))
   static unsigned int col;
   if (value!='\n')
@@ -160,18 +158,28 @@ out_char(unsigned value)
       *p = 0x0f00 | value;
       col++;
     }
+#ifndef NDEBUG
+  else
+    serial_send('\r');
+#endif
+
   if (col>=80 || value == '\n')
     {
-#ifndef NDEBUG
-      serial_send('\r');
-#endif
       col=0;
       unsigned short *p=BASE(0);
       memcpy(p, p+80, 24*160);
       memset(BASE(24), 0, 160);
     }
+
+#ifndef NDEBUG
+  serial_send(value);
+#endif
+
   return value;
 }
+
+
+
 
 
 /**
@@ -198,7 +206,7 @@ out_hex(unsigned value, unsigned bitlen)
       if (a>=10)
 	a += 7;
       a+=0x30;
-      
+
       out_char(a);
     }
 }

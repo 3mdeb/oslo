@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -16,7 +16,6 @@
 #include "util.h"
 #include "munich.h"
 #include "boot_linux.h"
-#include "mp.h"
 
 const char *message_label = "MUNICH: ";
 
@@ -46,6 +45,11 @@ start_linux(struct mbi *mbi)
   // filling out the header
   hdr->type_of_loader = 0x7;      // fake GRUB here
   hdr->cmd_line_ptr   = REALMODE_STACK;
+
+  // enable heap
+  hdr->heap_end_ptr   = (REALMODE_STACK - 0x200) & 0xffff;
+  hdr->loadflags     |= 0x80;
+
   // output kernel version string
   if (hdr->kernel_version)
     {
@@ -62,20 +66,22 @@ start_linux(struct mbi *mbi)
   // handle initrd
   if (1 < mbi->mods_count)
     {
-      hdr->ramdisk_image = (m+1)->mod_start;
       hdr->ramdisk_size = (m+1)->mod_end - (m+1)->mod_start;
-
-      out_description("initrd",hdr->ramdisk_image);
-      ERROR(-19, hdr->ramdisk_image + hdr->ramdisk_size > hdr->initrd_addr_max, "kernel can not reach initrd")
+      hdr->ramdisk_image = (m+1)->mod_start;
+      if (hdr->ramdisk_image + hdr->ramdisk_size > hdr->initrd_addr_max)
+	{
+	  unsigned long dst = (hdr->initrd_addr_max - hdr->ramdisk_size + 0xfff) & ~0xfff;
+	  out_description("relocating initrd", dst);
+	  memcpy((char *)dst, (char *)hdr->ramdisk_image, hdr->ramdisk_size);
+	  hdr->ramdisk_image = dst;
+	}
+      out_description("initrd",  hdr->ramdisk_image);
     }
-
 
   out_info("copy image");
   memcpy((char *) REALMODE_IMAGE, (char *) m->mod_start, (hdr->setup_sects+1) << 9);
   memcpy((char *) hdr->cmd_line_ptr, cmdline, strlen(cmdline)+1);
-  memcpy((char *) hdr->code32_start, 
-	 (char *)  m->mod_start + ((hdr->setup_sects+1) << 9),
-	 hdr->syssize*16);
+  memcpy((char *) hdr->code32_start, (char *)  m->mod_start + ((hdr->setup_sects+1) << 9), hdr->syssize*16);
 
   out_info("start kernel");
   jmp_kernel(REALMODE_IMAGE / 16 + 0x20, REALMODE_STACK);
@@ -93,20 +99,6 @@ __main(struct mbi *mbi, unsigned flags)
 #endif
   out_info(VERSION " starts Linux");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
-
-
-  if (0 <= check_cpuid())
-    {
-      /**
-       * Start the stopped APs and execute some fixup code.
-       * Note: we reuse the REALMODE_IMAGE region here.
-       */
-      memcpy((char *) REALMODE_IMAGE, &smp_init_start, &smp_init_end - &smp_init_start);
-      ERROR(26, start_processors(REALMODE_IMAGE), "sending an STARTUP IPI to other processors failed");
-
-      asm volatile("stgi");
-    }
-
   ERROR(11, start_linux(mbi), "start linux failed");
   return 12;
 }

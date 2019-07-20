@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -16,15 +16,15 @@
 .macro	FUNCTION name
 	.section .text.\name
 	.globl \name
-	\name:	
+	\name:
 .endm
 
 FUNCTION __mbheader
-        .align  4, 0x90
-        .long   0x1BADB002              /* magic */
-        .long   0x00000000              /* feature flags */
-        .long   0 - 0x1BADB002
-		
+	.align  4, 0x90
+	.long   0x1BADB002              /* magic */
+	.long   0x00000000              /* feature flags */
+	.long   0 - 0x1BADB002
+
 FUNCTION __start
 	leal    _stack,%esp
 	xchg    %eax,%edx
@@ -38,14 +38,14 @@ FUNCTION reboot
 	mov	$0x4, %al
 	outb	%al, $0x60
 	mov	$0xFE, %al
-	outb	%al, $0x60
+	outb	%al, $0x64
 	lidt    dummy_idt_desc
 	ud2
        .bss
 dummy_idt_desc:
 	.space 8
 
-		
+
 FUNCTION memcpy
 	/* a size optimized memcpy function */
 	pusha
@@ -54,8 +54,8 @@ FUNCTION memcpy
 	rep movsb
 	popa
 	ret
-	
-	
+
+
 FUNCTION memset
 	/* a size optimized memset function */
 	pusha
@@ -63,39 +63,39 @@ FUNCTION memset
 	mov  %edx, %edi
 	rep  stosb
 	popa
-	ret	
+	ret
 
-		
+
 FUNCTION jmp_multiboot
 	xchg %eax, %ebx
 	mov $0x2badb002, %eax
 	jmp *%edx
 
-	  	  
+
 FUNCTION do_skinit
 	mov    $__LOADER_START__, %eax
 	skinit
 
-	
+
 FUNCTION _skinit
-        /* switch back to our stack */
+	/* switch back to our stack */
 	leal    _stack, %esp
 
 	/* enable svm */
 	mov     $0xc0000080, %ecx
-        rdmsr
-        or	$0x10, %ah
+	rdmsr
+	or	$0x10, %ah
 	wrmsr
 
 	/* clear VM_CR to enable debugging */
  	mov     $0xc0010114, %ecx
-        rdmsr
-        and     $0xf8, %al
+	rdmsr
+	and     $0xf8, %al
 	wrmsr
 
-        /* init gdt and segment register */
+	/* init gdt and segment register */
 	lgdt    %ss:pgdt_desc
-        movw    $0x10, %ax
+	movw    $0x10, %ax
 	mov	%ax,   %ds
 	mov	%ax,   %es
 	mov	%ax,   %fs
@@ -108,7 +108,7 @@ FUNCTION _skinit
 	/* jmp to main */
 	jmp     oslo
 
-	
+
 /* the gdt to load after skinit */
 FUNCTION gdt
 	.global pgdt_desc
@@ -133,5 +133,5 @@ end_gdt:
 	.globl  _stack
 	.bss
 _stack_end:
-        .space  512
+	.space  512
 _stack:

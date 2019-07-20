@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -44,13 +44,12 @@ pamplona_fixup()
 
   /**
    * Start the stopped APs and execute some fixup code.
-   * Note: we reuse the REALMODE_CODE region here.
    */
   memcpy((char *) REALMODE_CODE, &smp_init_start, &smp_init_end - &smp_init_start);
-  ERROR(-2, start_processors(REALMODE_CODE), "sending an STARTUP IPI to other processors failed");
+  CHECK3(-2, start_processors(REALMODE_CODE), "sending an STARTUP IPI to other processors failed");
 
 
-  ERROR(12, (revision = enable_svm()), "could not enable SVM");
+  CHECK3(12, (revision = enable_svm()), "could not enable SVM");
   out_description("SVM revision:", revision);
 
   out_info("enable global interrupt flag");
@@ -69,14 +68,16 @@ __main(struct mbi *mbi, unsigned flags)
   out_info(VERSION " executes fixup code");
   ERROR(10, !mbi || flags != MBI_MAGIC, "not loaded via multiboot");
 
+  ERROR(12, pci_iterate_devices(), "could not iterate over the devices");
+
   if (0 < check_cpuid())
     {
 
-      ERROR(11, pamplona_fixup(), "fixup failed");
+      CHECK3(11, pamplona_fixup(), "fixup failed");
       out_info("fixup done");
 
-      //ERROR(12, pci_iterate_devices(), "could not iterate over the devices");
-      ERROR(12, disable_dev_protection(), "DEV disable failed");
+      if (disable_dev_protection())
+	out_info("DEV disable failed");
     }
 
 #if 0
@@ -96,9 +97,8 @@ __main(struct mbi *mbi, unsigned flags)
     }
 
 #endif
-
-  wait(1000);
+  out_info("done");
+  //wait(1000);
   ERROR(13, start_module(mbi), "start module failed");
   return 14;
 }
-

@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -57,7 +57,7 @@ TPM_Extend(unsigned char *buffer, unsigned long pcrindex, unsigned char *hash)
 TPM_TRANSMIT_FUNC(GetCapability_Pcrs, (unsigned char *buffer, unsigned int *value),
 		  unsigned long send_buffer[] = { TPM_ORD_GetCapability
 		      AND TPM_CAP_PROPERTY
-		      AND TPM_SUBCAP AND TPM_CAP_PROP_PCR };,		
+		      AND TPM_SUBCAP AND TPM_CAP_PROP_PCR };,
 		  if (TPM_EXTRACT_LONG(0)!=4)
 		    return -2;
 		  *value=TPM_EXTRACT_LONG(4);)
@@ -67,7 +67,7 @@ TPM_TRANSMIT_FUNC(GetCapability_Pcrs, (unsigned char *buffer, unsigned int *valu
  * Read a pcr value.
  * Returns the value of the pcr in pcrvalue.
  */
-TPM_TRANSMIT_FUNC(PcrRead, 
+TPM_TRANSMIT_FUNC(PcrRead,
 		  (unsigned char *buffer, unsigned long index, unsigned char *value),
 		  unsigned long send_buffer[] = {TPM_ORD_PcrRead AND index};
 		  if (value==0) return -1;,
@@ -84,9 +84,9 @@ dump_pcrs(unsigned char *buffer)
   else
     out_description("PCRs:", pcrs);
 
-  unsigned char hash[20];  
+  unsigned char hash[20];
   for (unsigned pcr=0; pcr < pcrs; pcr++)
-    { 
+    {
       int res;
       if ((res = TPM_PcrRead(buffer, pcr, hash)))
 	{
@@ -102,7 +102,7 @@ dump_pcrs(unsigned char *buffer)
 	    out_hex(hash[i], 7);
 	}
       out_char(pcr% 4==3 ? '\n' : ' ');
-      
+
     }
 }
 #endif

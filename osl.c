@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006-2007  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -21,8 +21,8 @@
 #include "mp.h"
 #include "osl.h"
 
-const char *version_string = "OSLO " VERSION "\n";
-const char *message_label = "OSLO:   ";
+static const char *version_string = "OSLO " VERSION "\n";
+const char * message_label = "OSLO:   ";
 
 /**
  * Function to output a hash.
@@ -137,7 +137,7 @@ int
 oslo(struct mbi *mbi)
 {
   struct Context ctx;
-  
+
   ERROR(20, !mbi, "no mbi in oslo()");
 
   if (tis_init(TIS_BASE))

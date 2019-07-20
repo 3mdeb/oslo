@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -47,7 +47,7 @@
     if (ret < 0)							\
       return ret;							\
     POSTCOND;								\
-    return ntohl(*(unsigned long *)(buffer+6));			        \
+    return ntohl(*(unsigned long *)(buffer+6));				\
   }
 
 /**
@@ -74,7 +74,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * 
+ *
  */
 enum tpm_ords {
 	TPM_ORD_Extend=20,

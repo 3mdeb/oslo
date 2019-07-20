@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -23,6 +23,7 @@ enum mbi_enum
     MBI_FLAG_MODS              = 1 << 3,
     MBI_FLAG_MMAP              = 1 << 6,
     MBI_FLAG_BOOT_LOADER_NAME  = 1 << 9,
+    MBI_FLAG_VBE               = 1 << 11,
   };
 
 
@@ -49,4 +50,13 @@ struct module
   unsigned mod_end;
   unsigned string;
   unsigned reserved;
+};
+
+
+struct mmap
+{
+  unsigned size;
+  unsigned long long base __attribute__((packed));
+  unsigned long long length  __attribute__((packed));
+  unsigned type;
 };

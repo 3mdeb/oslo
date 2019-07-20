@@ -1,7 +1,7 @@
 SECTIONS
 {
   ENTRY(__start)
-  . = 0x100000;
+  . = 0x18000;
 
   .text :
   {
@@ -9,15 +9,11 @@ SECTIONS
     KEEP(*(.text.__start));
     *(.text .text.*);
     *(.rodata .rodata.*);
-    *(.data .data.*);
   }
 
   .bss :
   {
-     . = ALIGN(0x1000); 
-     *(COMMON);
      *(.bss);
-     . = ALIGN(0x80000);
   }
 
 

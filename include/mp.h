@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006,2007,2010  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -20,9 +20,9 @@ enum
     MSR_APIC_BASE    = 0x1B,
     APIC_BASE_ENABLE = 0x800,
     APIC_BASE_BSP    = 0x100,
-    
+
     APIC_ICR_LOW_OFFSET  = 0x300,
-    
+
     APIC_ICR_DST_ALL_EX  = 0x3 << 18,
     APIC_ICR_LEVEL_EDGE  = 0x0 << 15,
     APIC_ICR_ASSERT      = 0x1 << 14,
