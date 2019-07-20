@@ -24,6 +24,7 @@
  *
  * Note: we modify value inflight, to avoid an additional array.
  */
+inline static
 unsigned int get_w(unsigned char * value, unsigned int round)
 {
   unsigned int res;
@@ -43,7 +44,7 @@ unsigned int get_w(unsigned char * value, unsigned int round)
 /**
  * Process a single block of 512 bits.
  */
-static
+inline static
 void
 process_block(struct Context *ctx)
 {

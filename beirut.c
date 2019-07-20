@@ -62,9 +62,8 @@ __main(struct mbi *mbi, unsigned flags)
   out_info(VERSION " hashes command lines");
   ERROR(10, !mbi || flags != MBI_MAGIC, "Not loaded via multiboot");
 
-  if (tis_init(TIS_BASE))
+  if (tis_init(TIS_BASE) && tis_access(TIS_LOCALITY_2, 0))
     {
-      ERROR(11, !tis_access(TIS_LOCALITY_2, 1), "could not gain TIS ownership");
       if (!mbi_hash_cmd_line(mbi, &ctx))
 	ERROR(12, tis_deactivate_all(), "tis_deactivate failed");
     }

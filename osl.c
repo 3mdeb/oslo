@@ -108,7 +108,7 @@ __main(struct mbi *mbi, unsigned flags)
   if (0 >= prepare_tpm(buffer) || (0 > (revision = check_cpuid())))
     {
       if (0 > revision)
-	out_info("No SVN platform");
+	out_info("No SVM platform");
       else
 	out_info("Could not prepare the TPM");
 

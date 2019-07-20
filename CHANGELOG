@@ -1,3 +1,11 @@
+OSLO (0.4.5)
+
+* fix tis_access return code check in Beirut to work with Atmel TPMs
+* fix reboot function
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Di, 19 June 2007
+
+
 OSLO (0.4.4)
 
 * make tis_access() portable - thanks to Broadcom

@@ -35,15 +35,17 @@ FUNCTION __start
 
 
 FUNCTION reboot
-	lidt   dummy_idt_desc
-	stgi
-	/* triple fault */
-	.byte 0xff, 0xff
-
-	.bss
+	mov	$0x4, %al
+	outb	%al, $0x60
+	mov	$0xFE, %al
+	outb	%al, $0x60
+	lidt    dummy_idt_desc
+	ud2
+       .bss
 dummy_idt_desc:
 	.space 8
-	
+
+		
 FUNCTION memcpy
 	/* a size optimized memcpy function */
 	pusha

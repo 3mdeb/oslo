@@ -19,8 +19,8 @@ Prerequisites
 =============
 
 To use OSLO a PC platform supporting _skinit_ is needed. There must be
-a processor with the _skinit_ instruction, a v1.2 TPM [TPM] and a
-chipset which provides memory protection for the secure loader.
+a processor supporting the _skinit_ instruction, a v1.2 TPM [TPM] and
+a chipset which provides memory protection for the secure loader.
 
 The _skinit_ instruction is available with newer AMD64 processors
 [AMD] and used to create a dynamic root of trust for measurement. It
