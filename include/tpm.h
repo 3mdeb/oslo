@@ -43,7 +43,7 @@
     assert(TCG_BUFFER_SIZE>=size);					\
     for (unsigned i=0; i<sizeof(send_buffer)/sizeof(*send_buffer); i++)	\
       *((unsigned long *)(buffer+6)+i) = ntohl(send_buffer[i]);		\
-    ret = tis_transmit(buffer, size, TCG_BUFFER_SIZE);			\
+    ret = tis_transmit(buffer, size, buffer, TCG_BUFFER_SIZE);		\
     if (ret < 0)							\
       return ret;							\
     POSTCOND;								\

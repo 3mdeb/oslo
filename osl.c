@@ -142,7 +142,7 @@ oslo(struct mbi *mbi)
 
   if (tis_init(TIS_BASE))
     {
-      ERROR(21, !tis_access(TIS_LOCALITY_2, 1), "could not gain TIS ownership");
+      ERROR(21, !tis_access(TIS_LOCALITY_2, 0), "could not gain TIS ownership");
       ERROR(22, mbi_calc_hash(mbi, &ctx),  "calc hash failed");
       show_hash("PCR[19]: ",ctx.hash);
 

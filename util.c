@@ -208,7 +208,7 @@ out_hex(unsigned value, unsigned bitlen)
  * message label.
  */
 void
-out_description(char *prefix, unsigned int value)
+out_description(const char *prefix, unsigned int value)
 {
   out_string(message_label);
   out_string(prefix);
@@ -221,7 +221,7 @@ out_description(char *prefix, unsigned int value)
  * Output a string, prefixed with a message label.
  */
 void
-out_info(char *msg)
+out_info(const char *msg)
 {
   out_string(message_label);
   out_string(msg);

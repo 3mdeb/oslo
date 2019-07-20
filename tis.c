@@ -20,12 +20,12 @@
 /**
  * TIS base address.
  */
-static unsigned long tis_base;
+static int tis_base;
 
 /**
  * Address of the TIS locality.
  */
-static unsigned long tis_locality;
+static int tis_locality;
 
 
 /**
@@ -33,7 +33,7 @@ static unsigned long tis_locality;
  * Returns a TIS_INIT_* value.
  */
 enum tis_init
-tis_init(unsigned long base)
+tis_init(int base)
 {
   volatile struct tis_id *id;
   volatile struct tis_mmap *mmap;
@@ -68,6 +68,9 @@ tis_init(unsigned long base)
     case 0x100214E4:
       out_description("Broadcom rev:", id->rid);
       return TIS_INIT_BROADCOM;
+    case 0x10001:
+      out_description("Qemu TPM rev:", id->rid);
+      return TIS_INIT_QEMU;
     case 0:
     case -1:
       out_info("TPM not found!");
@@ -111,7 +114,7 @@ tis_access(int locality, int force)
 {
   volatile struct tis_mmap *mmap;
 
-  // the Broadcom chip does not implement a force on locality0
+  // a force on locality0 is unnecessary
   assert(locality!=TIS_LOCALITY_0 || !force);
   assert(locality>=TIS_LOCALITY_0 && locality <= TIS_LOCALITY_4);
 
@@ -122,19 +125,30 @@ tis_access(int locality, int force)
   CHECK3(0,  mmap->access == 0xff, "access register invalid")
   CHECK3(2, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
 
-  mmap->access = force ? TIS_ACCESS_TO_SEIZE : TIS_ACCESS_REQUEST;
+  // first try it the normal way
+  mmap->access = TIS_ACCESS_REQUEST;
 
   wait(10);
+
   // make the tpm ready -> abort a command
   mmap->sts_base = TIS_STS_CMD_READY;
-
+  
+  if (force && !(mmap->access & TIS_ACCESS_ACTIVE))
+    {
+      // now force it
+      mmap->access = TIS_ACCESS_TO_SEIZE;
+      wait(10);
+      // make the tpm ready -> abort a command
+      mmap->sts_base = TIS_STS_CMD_READY;
+    }
   return mmap->access & TIS_ACCESS_ACTIVE;
+
 }
 
 
 static
 void
-wait_state(volatile struct tis_mmap *mmap, unsigned state)
+wait_state(volatile struct tis_mmap *mmap, unsigned char state)
 {
   unsigned i;
   for (i=0; i<750 && (mmap->sts_base & state)!=state; i++)
@@ -192,7 +206,7 @@ tis_read(unsigned char *buffer, unsigned int size)
   for (res=0; res < size && mmap->sts_base & TIS_STS_DATA_AVAIL; res++)
       *buffer++ = mmap->data_fifo;
 
-  CHECK3(-3, mmap->sts_base & TIS_STS_DATA_AVAIL, "more data availabe");
+  CHECK3(-3, mmap->sts_base & TIS_STS_DATA_AVAIL, "more data available");
 
   // make the tpm ready again -> this allows tpm background jobs to complete
   mmap->sts_base = TIS_STS_CMD_READY;
@@ -205,15 +219,14 @@ tis_read(unsigned char *buffer, unsigned int size)
  * This is our high level TIS function used by all TPM commands.
  */
 int
-tis_transmit(unsigned char *buffer, unsigned write_count, unsigned read_count)
+tis_transmit(const unsigned char *write_buffer, unsigned write_count, unsigned char *read_buffer, unsigned read_count)
 {
   unsigned int res;
 
-  res = tis_write(buffer, write_count);
+  res = tis_write(write_buffer, write_count);
   CHECK4(-1, res<=0, "  TIS write error:",res);
   
-  res = tis_read(buffer, read_count);
+  res = tis_read(read_buffer, read_count);
   CHECK4(-2, res<=0, "  TIS read error:",res);
-
   return res;
 }

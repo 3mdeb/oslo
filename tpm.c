@@ -28,7 +28,7 @@ TPM_Startup_Clear(unsigned char *buffer)
   ((unsigned int *)buffer)[0] = 0x0000c100;
   ((unsigned int *)buffer)[1] = 0x00000c00;
   ((unsigned int *)buffer)[2] = 0x01009900;
-  int res = tis_transmit(buffer, 12, TCG_BUFFER_SIZE);
+  int res = tis_transmit(buffer, 12, buffer, TCG_BUFFER_SIZE);
   return res < 0 ? res : (int) ntohl(*((unsigned int *) (buffer+6)));
 }
 
@@ -45,7 +45,7 @@ TPM_Extend(unsigned char *buffer, unsigned long pcrindex, unsigned char *hash)
   ((unsigned int *)buffer)[2] = 0x00001400;
   *((unsigned int *) (buffer+10))=ntohl(pcrindex);
   TPM_COPY_TO(hash, 4, TCG_HASH_SIZE);
-  int res = tis_transmit(buffer, 34, TCG_BUFFER_SIZE);
+  int res = tis_transmit(buffer, 34, buffer, TCG_BUFFER_SIZE);
   TPM_COPY_FROM(hash, 0, TCG_HASH_SIZE);
   return res < 0 ? res : (int) ntohl(*((unsigned int *) (buffer+6)));
 }

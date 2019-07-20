@@ -1,10 +1,19 @@
+OSLO (0.4.4)
+
+* make tis_access() portable - thanks to Broadcom
+* add support for Qemu TPM
+* made it more usable for the linux wrapper tis_oslo
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Di, 13 March 2007
+
+
 OSLO (0.4.3)
 
   * support for Broadcom TPMs - thanks to Jonathan M. McCune for debugging
   * use another region for realmode code to not clash with PXE loader
   * improved 64bit cleanness
 
- -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 26 February 2006
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 26 February 2007
 
 
 OSLO (0.4.2)

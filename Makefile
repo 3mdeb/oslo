@@ -57,7 +57,7 @@ pamplona.o: include/version.h include/asm.h include/util.h    \
 
 .PHONY: clean
 clean:
-	$(VERBOSE) rm -f oslo beirut munich pamplona $(OBJ) osl.o beirut.o munich.o pamplona.o
+	$(VERBOSE) rm -f oslo beirut munich pamplona $(OBJ) osl.o beirut.o munich.o pamplona.o boot_linux.o asm_pamplona.o
 
 %.o: %.c
 	$(VERBOSE) $(CC) $(CCFLAGS) -c $<

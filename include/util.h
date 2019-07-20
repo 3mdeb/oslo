@@ -92,8 +92,8 @@ void out_hex(unsigned int value, unsigned int bitlen);
  * every message with out_description is prefixed with message_label
  */
 extern const char *message_label;
-void out_description(char *prefix, unsigned int value);
-void out_info(char *msg);
+void out_description(const char *prefix, unsigned int value);
+void out_info(const char *msg);
 
 
 /**
@@ -101,6 +101,6 @@ void out_info(char *msg);
  */
 void wait(int ms);
 void __exit(unsigned status) __attribute__((noreturn));
-int check_cpuid();
-int enable_svm();
-void serial_init();
+int check_cpuid(void);
+int enable_svm(void);
+void serial_init(void);
