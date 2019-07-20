@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006-2007  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -20,12 +20,12 @@
 /**
  * TIS base address.
  */
-static int tis_base;
+static unsigned long tis_base;
 
 /**
  * Address of the TIS locality.
  */
-static int tis_locality;
+static unsigned long tis_locality;
 
 
 /**
@@ -33,7 +33,7 @@ static int tis_locality;
  * Returns a TIS_INIT_* value.
  */
 enum tis_init
-tis_init(int base)
+tis_init(unsigned long base)
 {
   volatile struct tis_id *id;
   volatile struct tis_mmap *mmap;
@@ -60,11 +60,14 @@ tis_init(int base)
       out_description("STM rev:", id->rid);
       return TIS_INIT_STM;
     case 0xb15d1:
-      out_description("Infinion rev:", id->rid);
+      out_description("Infineon rev:", id->rid);
       return TIS_INIT_INFINEON;
     case 0x32021114:
       out_description("Atmel rev:", id->rid);
       return TIS_INIT_ATMEL;
+    case 0x100214E4:
+      out_description("Broadcom rev:", id->rid);
+      return TIS_INIT_BROADCOM;
     case 0:
     case -1:
       out_info("TPM not found!");
@@ -78,6 +81,7 @@ tis_init(int base)
 
 /**
  * Deactivate all localities.
+ * Returns zero if no locality is active.
  */
 int
 tis_deactivate_all(void)
@@ -87,8 +91,11 @@ tis_deactivate_all(void)
   for (i=0; i<4; i++)
     {
       volatile struct tis_mmap *mmap = (struct tis_mmap *)(tis_base+(i<<12));
-      mmap->access = TIS_ACCESS_ACTIVE;
-      res |= mmap->access & TIS_ACCESS_ACTIVE;
+      if (mmap->access!= 0xff)
+	{
+	  mmap->access = TIS_ACCESS_ACTIVE;
+	  res |= mmap->access & TIS_ACCESS_ACTIVE;
+	}
     }
   return res;
 }
@@ -104,13 +111,16 @@ tis_access(int locality, int force)
 {
   volatile struct tis_mmap *mmap;
 
+  // the Broadcom chip does not implement a force on locality0
+  assert(locality!=TIS_LOCALITY_0 || !force);
   assert(locality>=TIS_LOCALITY_0 && locality <= TIS_LOCALITY_4);
 
   tis_locality = tis_base + locality;
   mmap = (struct tis_mmap *) tis_locality;
 
   CHECK3(0, !(mmap->access & TIS_ACCESS_VALID), "access register not valid");
-  CHECK3(1, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
+  CHECK3(0,  mmap->access == 0xff, "access register invalid")
+  CHECK3(2, mmap->access & TIS_ACCESS_ACTIVE, "locality already active");
 
   mmap->access = force ? TIS_ACCESS_TO_SEIZE : TIS_ACCESS_REQUEST;
 

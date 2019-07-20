@@ -81,6 +81,27 @@ check_cpuid()
 }
 
 
+/**
+ * Enables SVM support.
+ *
+ */
+int
+enable_svm()
+{
+  enum
+    {
+      MSR_EFER = 0xC0000080,
+      EFER_SVME = 1<<12,
+    };
+
+  unsigned long long value;
+  value = rdmsr(MSR_EFER);
+  wrmsr(MSR_EFER, value | EFER_SVME);
+  CHECK3(-40, !(rdmsr(MSR_EFER) & EFER_SVME), "could not enable SVM");
+  return 0;
+}
+
+
 #ifndef NDEBUG
 static unsigned int serial_initialized;
 #define SERIAL_BASE 0x3f8
@@ -113,7 +134,7 @@ serial_send(unsigned value)
   if (!serial_initialized)
     return;
 
-  while (!(inb(SERIAL_BASE+0x5) & 0x40))
+  while (!(inb(SERIAL_BASE+0x5) & 0x20))
     ;
   outb(SERIAL_BASE, value);
 }

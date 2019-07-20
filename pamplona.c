@@ -21,12 +21,13 @@
 #include "pamplona.h"
 
 const char *message_label = "PAMPLONA: ";
-const unsigned REALMODE_CODE = 0x10000;
+const unsigned REALMODE_CODE = 0x20000;
 const char *CPU_NAME =  "AMD CPU booted by OSLO/PAMPLONA";
 
 
 /**
  * Fix some issues that unmodified OS's could start after oslo.
+ * This should only be called if check_cpuid() succeded.
  */
 int
 pamplona_fixup()
@@ -39,15 +40,18 @@ pamplona_fixup()
     wrmsr(0xc0010030+i, * (unsigned long long*) (CPU_NAME+i*8));
 
   out_info("halt APs in init state");
-  if (0 <= check_cpuid())
-    {
-      /**
-       * Start the stopped APs and execute some fixup code.
-       * Note: we reuse the REALMODE_CODE region here.
-       */
-      memcpy((char *) REALMODE_CODE, &smp_init_start, &smp_init_end - &smp_init_start);
-      ERROR(-2, start_processors(REALMODE_CODE), "sending an STARTUP IPI to other processors failed");
-    }
+  int revision;
+
+  /**
+   * Start the stopped APs and execute some fixup code.
+   * Note: we reuse the REALMODE_CODE region here.
+   */
+  memcpy((char *) REALMODE_CODE, &smp_init_start, &smp_init_end - &smp_init_start);
+  ERROR(-2, start_processors(REALMODE_CODE), "sending an STARTUP IPI to other processors failed");
+
+
+  ERROR(12, (revision = enable_svm()), "could not enable SVM");
+  out_description("SVM revision:", revision);
 
   out_info("enable global interrupt flag");
   asm volatile("stgi");
@@ -71,11 +75,11 @@ __main(struct mbi *mbi, unsigned flags)
       ERROR(11, pamplona_fixup(), "fixup failed");
       out_info("fixup done");
 
-      ERROR(12, pci_iterate_devices(), "could not iterate over the devices");
+      //ERROR(12, pci_iterate_devices(), "could not iterate over the devices");
       ERROR(12, disable_dev_protection(), "DEV disable failed");
     }
 
-#ifndef NDEBUG
+#if 0
   out_info("MMAP");
   out_description("addr", mbi->mmap_addr);
   out_description("len",  mbi->mmap_length);
@@ -97,3 +101,4 @@ __main(struct mbi *mbi, unsigned flags)
   ERROR(13, start_module(mbi), "start module failed");
   return 14;
 }
+

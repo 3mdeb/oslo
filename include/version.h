@@ -13,4 +13,4 @@
  */
 
 #pragma once
-#define VERSION "v.0.4.2"
+#define VERSION "v.0.4.3"

@@ -13,15 +13,37 @@ pci_read_byte(unsigned addr)
 }
 
 /**
+ * Read a word from the pci config space.
+ */
+unsigned short
+pci_read_word(unsigned addr)
+{
+  outl(PCI_ADDR_PORT, addr);
+  return inw(PCI_DATA_PORT + (addr & 2));
+}
+
+
+/**
  * Read a long from the pci config space.
  */
-static
 unsigned
 pci_read_long(unsigned addr)
 {
   outl(PCI_ADDR_PORT, addr);
   return inl(PCI_DATA_PORT);
 }
+
+
+/**
+ * Write a word to the pci config space.
+ */
+void
+pci_write_word(unsigned addr, unsigned short value)
+{
+  outl(PCI_ADDR_PORT, addr);
+  outw(PCI_DATA_PORT + (addr & 2), value);
+}
+
 
 /**
  * Write a long to the pci config space.
@@ -32,6 +54,26 @@ pci_write_long(unsigned addr, unsigned value)
 {
   outl(PCI_ADDR_PORT, addr);
   outl(PCI_DATA_PORT, value);
+}
+
+
+/**
+ * Return an pci config space address of a device with the given
+ * class/subclass id or 0 on error.
+ *
+ * Note: this returns the last device found!
+ */
+unsigned
+pci_find_device_per_class(unsigned short class)
+{
+  unsigned res = 0;
+  for (unsigned i=0; i<1<<16; i++)
+    {
+      unsigned addr = 0x80000000 | i<<8;
+      if (class == (pci_read_long(addr+0x8) >> 16))
+	res = addr;
+    }
+  return res;
 }
 
 
@@ -89,8 +131,9 @@ pci_iterate_devices()
 	for (unsigned func=0; func<=maxfunc; func++)
 	  {
 	    unsigned addr = 0x80000000 | bus << 16 | dev << 11 | func << 8;
-	    unsigned value=pci_read_long(addr);
-	    
+	    unsigned value= pci_read_long(addr);
+	    unsigned class = pci_read_long(addr+0x8) >> 16;
+
 	    unsigned char header_type = pci_read_byte(addr+14);
 	    if (!maxfunc && header_type & 0x80)
 	      maxfunc=7;
@@ -101,6 +144,9 @@ pci_iterate_devices()
 	    out_hex(dev,4);
 	    out_char('.');
 	    out_hex(func, 3);
+	    out_char(' ');
+	    out_hex(class, 15);
+	    out_char(':');
 	    out_char(' ');
 	    out_hex(value & 0xffff, 15);
 	    out_char(':');

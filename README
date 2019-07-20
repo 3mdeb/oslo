@@ -63,13 +63,14 @@ Components
 
 :tis.c:
   A simple TIS [TIS] driver using the memory mapped interface of
-  version 1.2 TPMs. Tested with TPMs from Infineon and STM.
+  version 1.2 TPMs. Tested with TPMs from Infineon, STM, Atmel and
+  Broadcom.
 
 :tpm.c:
   The needed TPM functions, like TPM_Extend.
 
 :elf.c:
-  The elf encoding.
+  The elf decoding.
 
 :osl.c:
   The main program including hashing the modules and
@@ -87,6 +88,13 @@ Components
   A helper program that hashes the command line of other multiboot
   modules.
 
+:pamplona.c:
+  A helper program that does everything to reverse the steps done by
+  OSLO. For example it removes DEV protection and clears the global
+  interrupt flag. It does allow you to use OSLO but start an
+  unmodified OS in an unsecure way after that.
+
+
 :munich.c:
   A helper program to start Linux [LBP] from a multiboot compliant
   loader. The first module is used as linux kernel. The optional
@@ -97,9 +105,8 @@ FAQ
 ###
 
 : Why is DEV protection not implemented? :
-  If OSLO would disallow DMA to all RAM many OS will break, since
-  there is currently no kernel which can handle DEV protected
-  memory. The same is true for the global interrupt flag.
+  Mainly time reasons and the realization that the workaround for the
+  DEV init race has to be implemented.
 
 : Why do you extend the PCR for every module? :
   Previously OSLO would calc a hash over all multiboot modules. This
@@ -114,6 +121,11 @@ FAQ
   (e.g. simple hash them itself), we have to hash the commandline
   before we pass it to them. Or in other words: Beirut is just a nasty
   hack for compatibility reasons.
+
+: Is OSLO bugfree? :
+  Of course not in this version. Currently at least two bugs are
+  known: The DEV initialization is missing and the famous "type of
+  memory" bug is still present.
 
 
 References

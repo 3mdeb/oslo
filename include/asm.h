@@ -97,7 +97,17 @@ unsigned char
 inb(const unsigned short port)
 {
   unsigned char res;
-  asm volatile("in %1, %0" : "=a"(res): "Nd"(port));
+  asm volatile("inb %1, %0" : "=a"(res): "Nd"(port));
+  return res;
+}
+
+
+static inline
+unsigned short
+inw(unsigned short port)
+{
+  unsigned short res;
+  asm volatile("inw  %1, %0" : "=a"(res) : "Nd"(port));
   return res;
 }
 
@@ -114,17 +124,25 @@ inl(const unsigned short port)
 
 static inline
 void
-outl(const unsigned short port, unsigned value)
+outb(const unsigned short port, unsigned char value)
 {
-  asm volatile("outl %0,%1" :: "a"(value),"Nd"(port));
+  asm volatile("outb %0,%1" :: "a"(value),"Nd"(port));
 }
 
 
 static inline
 void
-outb(const unsigned short port, unsigned char value)
+outw(const unsigned short port, unsigned short value)
 {
-  asm volatile("outb %0,%1" :: "a"(value),"Nd"(port));
+  asm volatile("outw %0,%1" :: "a"(value),"Nd"(port));
+}
+
+
+static inline
+void
+outl(const unsigned short port, unsigned value)
+{
+  asm volatile("outl %0,%1" :: "a"(value),"Nd"(port));
 }
 
 
@@ -134,5 +152,15 @@ bsr(unsigned int value)
 {
   unsigned res;
   asm volatile("bsr %1,%0" : "=r"(res): "r"(value));
+  return res;
+}
+
+
+static inline
+unsigned
+bsf(unsigned int value)
+{
+  unsigned res;
+  asm volatile("bsf %1,%0" : "=r"(res): "r"(value));
   return res;
 }

@@ -1,3 +1,12 @@
+OSLO (0.4.3)
+
+  * support for Broadcom TPMs - thanks to Jonathan M. McCune for debugging
+  * use another region for realmode code to not clash with PXE loader
+  * improved 64bit cleanness
+
+ -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 26 February 2006
+
+
 OSLO (0.4.2)
 
   * fix initialization of serial devices
@@ -6,6 +15,7 @@ OSLO (0.4.2)
 
  -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Mo, 13 November 2006
 
+
 OSLO (0.4.1)
 
   * fix nasty SHA1 bug, triggered on hashing cmdlines
@@ -13,6 +23,7 @@ OSLO (0.4.1)
   * add serial output for debugging
 
  -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Fr, 20 October 2006
+
 
 OSLO (0.4.0)
 
@@ -28,6 +39,7 @@ OSLO (0.3.5)
 
  -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 05 July 2006
 
+
 OSLO (0.3.4)
 
   * added BEIRUT to calc hashes of command lines
@@ -35,6 +47,7 @@ OSLO (0.3.4)
   * move start_module into elf.c to allow sharing with BEIRUT
 
  -- Bernhard Kauer <kauer@os.inf.tu-dresden.de>  Wed, 07 June 2006
+
 
 OSLO (0.3.3)
 

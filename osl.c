@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006-2007  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -65,27 +65,6 @@ mbi_calc_hash(struct mbi *mbi, struct Context *ctx)
 
 
 /**
- * Enables SVM support.
- *
- */
-int
-enable_svm()
-{
-  enum
-    {
-      MSR_EFER = 0xC0000080,
-      EFER_SVME = 1<<12,
-    };
-
-  unsigned long long value;
-  value = rdmsr(MSR_EFER);
-  wrmsr(MSR_EFER, value | EFER_SVME);
-  CHECK3(-40, !(rdmsr(MSR_EFER) & EFER_SVME), "could not enable SVM");
-  return 0;
-}
-
-
-/**
  * Prepare the TPM for skinit.
  * Returns a TIS_INIT_* value.
  */
@@ -96,7 +75,7 @@ prepare_tpm(unsigned char *buffer)
   int tpm, res;
 
   CHECK4(-60, 0 >= (tpm = tis_init(TIS_BASE)), "tis init failed", tpm);
-  CHECK3(-61, !tis_access(TIS_LOCALITY_0, 1), "could not gain TIS ownership");
+  CHECK3(-61, !tis_access(TIS_LOCALITY_0, 0), "could not gain TIS ownership");
   if ((res=TPM_Startup_Clear(buffer)) && res!=0x26)
     out_description("TPM_Startup() failed", res);
 
@@ -126,7 +105,7 @@ __main(struct mbi *mbi, unsigned flags)
   mbi->boot_loader_name = (unsigned) version_string;
 
   int revision = 0;
-  if (0 >= prepare_tpm(buffer) && (0>(revision = check_cpuid())))
+  if (0 >= prepare_tpm(buffer) || (0 > (revision = check_cpuid())))
     {
       if (0 > revision)
 	out_info("No SVN platform");
@@ -136,8 +115,8 @@ __main(struct mbi *mbi, unsigned flags)
       ERROR(11, start_module(mbi), "start module failed");
     }
 
-  ERROR(12, enable_svm(), "could not enable SVM");
   out_description("SVM revision:", revision);
+  ERROR(12, enable_svm(), "could not enable SVM");
 
   /**
    * All APs have to be in the INIT state before skinit can be

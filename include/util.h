@@ -102,4 +102,5 @@ void out_info(char *msg);
 void wait(int ms);
 void __exit(unsigned status) __attribute__((noreturn));
 int check_cpuid();
+int enable_svm();
 void serial_init();

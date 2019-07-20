@@ -4,7 +4,7 @@
  * \author  Bernhard Kauer <kauer@tudos.org>
  */
 /*
- * Copyright (C) 2006  Bernhard Kauer <kauer@tudos.org>
+ * Copyright (C) 2006-2007  Bernhard Kauer <kauer@tudos.org>
  * Technische Universitaet Dresden, Operating Systems Research Group
  *
  * This file is part of the OSLO package, which is distributed under
@@ -20,12 +20,13 @@ enum tis_init
     TIS_INIT_STM = 1,
     TIS_INIT_INFINEON = 2,
     TIS_INIT_ATMEL = 3,
+    TIS_INIT_BROADCOM = 4,
   };
 
 
 enum tis_mem_offsets
   {
-    TIS_BASE =  (int) 0xfed40000,
+    TIS_BASE =  (unsigned) 0xfed40000,
     TPM_DID_VID_0 = 0xf00,
     TIS_LOCALITY_0 = 0x0000,
     TIS_LOCALITY_1 = 0x1000,
@@ -85,7 +86,7 @@ enum tis_sts_bits
 
 
 void tis_dump(void);
-enum tis_init tis_init(int tis_base);
+enum tis_init tis_init(unsigned long tis_base);
 int tis_deactivate_all(void);
 int tis_access(int locality, int force);
 int tis_transmit(unsigned char *buffer,
